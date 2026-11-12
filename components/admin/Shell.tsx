@@ -8,6 +8,7 @@ export function Shell({ children, title, erro, ok }: { children: React.ReactNode
         <nav className="mx-auto flex max-w-6xl items-center gap-4 px-4 py-3 text-sm font-semibold">
           <Link href="/admin" className="eyebrow">Um Lugar à Mesa</Link>
           <Link href="/admin" className="opacity-80 hover:opacity-100">Calendário</Link>
+          <Link href="/admin/quadro" className="opacity-80 hover:opacity-100">Quadro</Link>
           <Link href="/admin/pessoas" className="opacity-80 hover:opacity-100">Pessoas</Link>
           <form action={logout} className="ml-auto"><button className="opacity-60 hover:opacity-100">Sair</button></form>
         </nav>

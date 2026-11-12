@@ -95,6 +95,24 @@ export default async function Page({ params }: { params: Promise<{ token: string
               </article>
             )}
 
+            {!ended && yes && inv.allow_nominations && (inv.active < inv.seats || inv.nominated) && (
+              <article className="box" style={{ background: "var(--lime)" }}>
+                <span className="eyebrow tag">Abriu um lugar</span>
+                {inv.nominated ? (
+                  <><h3>Sua indicação chegou</h3><p>{inv.nominated === "aprovada" ? "Aprovada: a pessoa recebe o convite pelo WhatsApp." : inv.nominated === "recusada" ? "Dessa vez não deu. Obrigado por lembrar de alguém." : "O anfitrião vai olhar e responder pelo WhatsApp."}</p></>
+                ) : (
+                  <>
+                    <h3>Conhece alguém pra essa mesa?</h3>
+                    <p>A pessoa se inscreve pelo seu link e o anfitrião confirma. Uma indicação por convidado.</p>
+                    <div className="flex flex-wrap gap-2.5">
+                      <a className="btn btn-hot" target="_blank" rel="noopener" href={`https://wa.me/?text=${encodeURIComponent(`Abriu um lugar num jantar que eu vou, ${fmtDate(start)}. Se inscreve por aqui: ${siteUrl()}/inscricao?indica=${inv.id}`)}`}>Mandar no WhatsApp</a>
+                      <CopyButton text={`${siteUrl()}/inscricao?indica=${inv.id}`} label="Copiar link" className="btn btn-line" />
+                    </div>
+                  </>
+                )}
+              </article>
+            )}
+
             {ended ? (
               <article className="box" style={{ background: "var(--lime)" }}>
                 <span className="eyebrow tag">Depois</span>
@@ -111,6 +129,7 @@ export default async function Page({ params }: { params: Promise<{ token: string
               </article>
             )}
           </div>
+          <p className="mt-6 text-sm"><Link className="link" href={`/eu/${inv.guest_token}`}>Seu espaço: marque suas sextas livres e mande uma foto (opcional)</Link></p>
         </section>
       </main>
 

@@ -5,9 +5,11 @@ import { TableFields } from "@/components/admin/TableForm";
 import { QueueItem } from "@/components/admin/QueueItem";
 import { CopyButton } from "@/components/CopyButton";
 import { requireAdmin, shortDate, STATUS_LABEL, STATUS_COLOR } from "@/lib/admin";
-import { getQueue, getSeats, getTable, tableWarnings, type Seat } from "@/lib/admin-data";
+import { getNominations, getQueue, getSeats, getTable, tableWarnings, type Seat } from "@/lib/admin-data";
+import { Avatar } from "@/components/admin/Avatar";
+import { dayKey } from "@/lib/admin";
 import { siteUrl } from "@/lib/format";
-import { markSent, removeSeat, saveAfter, sendWhatsapp, setRsvp, updateTable } from "../../actions";
+import { decideNomination, markSent, removeSeat, saveAfter, sendWhatsapp, setRsvp, toggleNominations, updateTable } from "../../actions";
 
 const AGES = ["18-24", "25-34", "35-44", "45-54", "55+"];
 
@@ -30,10 +32,13 @@ export default async function Page({ params, searchParams }: {
   const past = t.starts_at.getTime() < Date.now();
   const replaced = new Set(seats.filter((s) => s.replaces_id && s.status !== "removido").map((s) => s.replaces_id));
   const openDropouts = seats.filter((s) => s.status === "nao" && !replaced.has(s.invitation_id));
-  const [queue, suggestions] = await Promise.all([
-    getQueue({ excludeTable: t.id, q: sp.q, tier: sp.f, idade: AGES.includes(sp.idade || "") ? sp.idade : undefined, all: sp.todos === "1" }),
-    openDropouts.length && !full ? getQueue({ excludeTable: t.id, limit: 5 }) : Promise.resolve([]),
+  const day = dayKey(t.starts_at);
+  const [queue, suggestions, noms] = await Promise.all([
+    getQueue({ day, excludeTable: t.id, q: sp.q, tier: sp.f, idade: AGES.includes(sp.idade || "") ? sp.idade : undefined, all: sp.todos === "1" }),
+    openDropouts.length && !full ? getQueue({ day, excludeTable: t.id, limit: 5 }) : Promise.resolve([]),
+    getNominations(t.id),
   ]);
+  const pendingNoms = noms.filter((n) => n.status === "pendente");
   const feedbackUrl = `${siteUrl()}/feedback/${t.public_id}`;
 
   return (
@@ -52,6 +57,42 @@ export default async function Page({ params, searchParams }: {
             </ul>
           </Card>
 
+          {!past && (
+            <Card className={pendingNoms.length ? "border-2 border-ink" : ""}>
+              <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                <h2 className="font-bold">Indicações dos convidados {pendingNoms.length > 0 && <span className="rounded-full bg-lime px-2 text-sm">{pendingNoms.length} nova(s)</span>}</h2>
+                <form action={toggleNominations}>
+                  <input type="hidden" name="table_id" value={t.id} />
+                  <button className={btnSmall}>{t.allow_nominations ? "Fechar indicações" : "Liberar indicações"}</button>
+                </form>
+              </div>
+              <p className="mb-3 text-sm text-muted">
+                {t.allow_nominations
+                  ? "Aberto: quem confirmou vê \"Abriu um lugar\" no convite (sem dizer quem saiu) e pode indicar 1 pessoa. Você aprova."
+                  : "Fechado. Libere quando abrir um lugar e quiser que os confirmados indiquem alguém."}
+              </p>
+              <ul className="grid gap-2">
+                {noms.map((n) => (
+                  <li key={n.id} className="flex flex-wrap items-center gap-3 rounded-lg border border-line p-3">
+                    <Avatar id={n.nominee_id} name={n.nominee} has={n.has_photo} />
+                    <div className="min-w-0 flex-1">
+                      <Link href={`/admin/pessoas/${n.nominee_id}`} className="font-bold hover:underline">{n.nominee}</Link>
+                      <p className="text-xs text-muted">Indicado(a) por {n.nominator.split(" ")[0]}{n.age_range ? ` · ${n.age_range}` : ""}{n.allergies.some((a) => a !== "nenhuma") ? ` · ⚠ ${n.allergies.filter((a) => a !== "nenhuma").join(", ")}` : ""}</p>
+                      {n.life_answer && <p className="text-xs italic">“{n.life_answer}”</p>}
+                    </div>
+                    {n.status === "pendente" ? (
+                      <div className="flex gap-1">
+                        <form action={decideNomination}><input type="hidden" name="nomination_id" value={n.id} /><input type="hidden" name="decision" value="aprovar" /><button className={btnSmall} disabled={full}>Aprovar</button></form>
+                        <form action={decideNomination}><input type="hidden" name="nomination_id" value={n.id} /><input type="hidden" name="decision" value="recusar" /><button className="text-xs text-muted underline">recusar</button></form>
+                      </div>
+                    ) : <span className="text-xs font-bold">{n.status === "aprovada" ? "Aprovada" : "Recusada"}</span>}
+                  </li>
+                ))}
+                {!noms.length && <li className="text-sm text-muted">Nenhuma indicação ainda.</li>}
+              </ul>
+            </Card>
+          )}
+
           {openDropouts.length > 0 && !full && (
             <Card className="border-2 border-pink">
               <h2 className="mb-1 font-bold">Substituir: {openDropouts.map((s) => s.name.split(" ")[0]).join(", ")} não vem</h2>
@@ -69,7 +110,8 @@ export default async function Page({ params, searchParams }: {
               {seats.filter((s) => s.status !== "removido").map((s) => (
                 <li key={s.invitation_id} className="rounded-lg border border-line p-3">
                   <div className="flex flex-wrap items-start justify-between gap-2">
-                    <div className="min-w-0">
+                    <Avatar id={s.guest_id} name={s.name} has={s.has_photo} size={44} />
+                    <div className="min-w-0 flex-1">
                       <Link href={`/admin/pessoas/${s.guest_id}`} className="font-bold hover:underline">{s.name}</Link>
                       <p className="text-xs text-muted">{[s.age_range, s.life_stage, s.wine === "sim" ? "vinho ok" : "sem vinho", s.past_tables ? `veio ${s.past_tables}x` : "primeira vez"].filter(Boolean).join(" · ")}</p>
                       {s.allergies.some((a) => a !== "nenhuma") && <p className="text-xs font-semibold">⚠ {s.allergies.filter((a) => a !== "nenhuma").join(", ")}{s.allergy_notes ? ` (${s.allergy_notes})` : ""}</p>}

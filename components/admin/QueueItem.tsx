@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { QueueRow } from "@/lib/admin-data";
 import { seatGuest } from "@/app/admin/actions";
 import { btnSmall } from "./Shell";
+import { Avatar } from "./Avatar";
 
 const TIER = ["Nunca veio", "Reconvidar", "Já convidado", "", "", "", "", "", "", "Fora (3+ ou não reconvidar)"];
 
@@ -10,11 +11,13 @@ export function QueueItem({ g, tableId, replacesId, full }: { g: QueueRow; table
   return (
     <li className="rounded-lg border border-line bg-white p-3">
       <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0">
+        <Avatar id={g.id} name={g.name} has={g.has_photo} />
+        <div className="min-w-0 flex-1">
           <Link href={`/admin/pessoas/${g.id}`} className="font-bold hover:underline">{g.name}</Link>
           <p className="text-xs text-muted">
             {[g.age_range, g.life_stage, TIER[g.tier], g.friday_ok === "dificil" ? "sexta difícil" : null, g.is_pilot ? "piloto" : null].filter(Boolean).join(" · ")}
           </p>
+          {g.free === true && <p className="text-xs font-bold text-ink"><span className="rounded bg-lime px-1">livre nesse dia</span></p>}
           {g.partner_name && <p className="text-xs font-semibold">Par: {g.partner_name}</p>}
           {allergies.length > 0 && <p className="text-xs font-semibold">⚠ {allergies.join(", ")}</p>}
           {g.life_answer && <p className="mt-1 line-clamp-2 text-xs italic">“{g.life_answer}”</p>}
