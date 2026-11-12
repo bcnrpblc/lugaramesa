@@ -19,7 +19,7 @@ export default function Page() {
 
           <h3>O que coletamos</h3>
           <ul>
-            <li><b>Na inscrição:</b> e-mail, nome, WhatsApp, faixa de idade, momento de vida, o que você não come, se topa vinho, se sexta funciona, respostas sobre receber e ser recebido, se abriria sua casa, um prato que lembra casa e, se quiser, uma “primeira vez” recente.</li>
+            <li><b>Na inscrição:</b> e-mail, nome, WhatsApp, faixa de idade, momento de vida, comidas de que você gosta, o que você não come, se topa vinho, se sexta funciona, respostas sobre receber e ser recebido, se abriria sua casa, um prato que lembra casa e, se quiser, uma “primeira vez” recente.</li>
             <li><b>Alergias e restrições alimentares</b>, se você informar. A lei trata como dado sensível (saúde), por isso pedimos um consentimento separado.</li>
             <li><b>Quem te chamou:</b> o código de convite de quem te indicou, se houver.</li>
             <li><b>Seu par</b>, se vocês se inscreverem juntos: cada pessoa faz a própria inscrição e dá o próprio consentimento. Guardamos só que vocês são um casal, para sentarem juntos. Um não vê os dados do outro.</li>
