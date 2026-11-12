@@ -272,10 +272,10 @@ alter table guests add column if not exists guest_token text unique default lowe
 update guests set guest_token = lower(substr(replace(gen_random_uuid()::text,'-','') || replace(gen_random_uuid()::text,'-',''),1,24)) where guest_token is null;
 alter table guests alter column guest_token set not null;
 
--- Photo: optional, own consent, stored in the DB (small JPEG, ~50 KB). Deleting the guest deletes it.
+-- Photo: optional, own consent. Bytes live in R2 (private bucket) at guests/{guest_id}.jpg; this row = consent + "has photo".
 create table if not exists guest_photos (
   guest_id    uuid primary key references guests(id) on delete cascade,
-  data        bytea not null check (octet_length(data) <= 400000),
+  data        bytea,   -- unused since photos moved to R2
   mime        text not null default 'image/jpeg' check (mime = 'image/jpeg'),
   consent_at  timestamptz not null,
   updated_at  timestamptz not null default now()
@@ -305,6 +305,7 @@ create table if not exists nominations (
 );
 create index if not exists nominations_table_idx on nominations(table_id);
 
+alter table guest_photos alter column data drop not null;
 alter table guest_photos enable row level security;
 alter table availability enable row level security;
 alter table nominations  enable row level security;
