@@ -42,7 +42,7 @@ export default function Page() {
           <p>Seu consentimento (art. 7º, I). Para alergias e restrições, consentimento específico e destacado (art. 11, I). A foto tem consentimento próprio. Você pode retirar qualquer um deles quando quiser, e o restante continua valendo.</p>
 
           <h3>Onde ficam e por quanto tempo</h3>
-          <p>Os dados ficam em um banco de dados da Supabase e o site roda na Vercel. São empresas que prestam o serviço de hospedagem e podem processar dados fora do Brasil, com as garantias contratuais delas. Só o anfitrião tem acesso. Guardamos enquanto você quiser participar. Se você não participar de nenhuma mesa por 2 anos, apagamos sua inscrição. Se pedir, apagamos tudo em até 15 dias.</p>
+          <p>Os dados ficam em um banco de dados da Supabase, as fotos ficam guardadas na Cloudflare (sem acesso público) e o site roda na Vercel. São empresas que prestam o serviço de hospedagem e podem processar dados fora do Brasil, com as garantias contratuais delas. Só o anfitrião tem acesso. Guardamos enquanto você quiser participar. Se você não participar de nenhuma mesa por 2 anos, apagamos sua inscrição. Se pedir, apagamos tudo em até 15 dias.</p>
 
           <h3>Seus direitos</h3>
           <p>Você pode pedir acesso a todos os seus dados, correção, exclusão ou a retirada do consentimento a qualquer momento (art. 18). A foto e as sextas livres você mesmo muda ou apaga na sua página pessoal, pelo link que recebeu. Para o resto, escreva para <b>{CONTATO}</b> ou mande uma mensagem no WhatsApp de onde recebeu o convite.</p>
