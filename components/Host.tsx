@@ -13,7 +13,7 @@ export function HostSection() {
       <div className="grid gap-5 content-start">
         <h2>{HOST.intro} <span className="soft">{HOST.why}</span></h2>
         <div className="grid gap-3 sm:grid-cols-3">
-          {HOST.facts.map(([k, v]) => (
+          {HOST.facts.filter(([, v]) => !v.includes("{")).map(([k, v]) => (
             <div key={k} className="rounded-card p-4" style={{ background: "var(--cyan)" }}>
               <p className="eyebrow mb-2">{k}</p>
               <p className="font-semibold leading-snug">{v}</p>
