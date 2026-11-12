@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Nav, Footer } from "@/components/SiteChrome";
 import { Photo } from "@/components/Photo";
+import { HostTeaser } from "@/components/Host";
 
 function Seats() {
   return (
@@ -110,6 +111,8 @@ export default function Home() {
             <Photo src="/fotos/galeria-5.jpg" alt="Velas e pratos vazios no fim da noite" caption="Foto: fim de noite" />
           </div>
         </div></section>
+
+        <HostTeaser />
 
         <section className="faq-sec" id="combinados"><div className="wrap">
           <h2>Combinados da casa</h2>
