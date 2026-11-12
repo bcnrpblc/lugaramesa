@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Nav, Footer } from "@/components/SiteChrome";
+import { HostSection } from "@/components/Host";
 
 export const metadata: Metadata = { title: "Por quê" };
 
@@ -23,6 +24,8 @@ export default function Page() {
             <h2>Conforto não é requisito para hospitalidade. <span className="pinkt">Proximidade é o que faz uma noite ficar na memória.</span> <span className="soft">Por isso 40 m², 8 cadeiras e nenhum salão.</span></h2>
           </div>
         </div></section>
+
+        <HostSection />
 
         <section className="black"><div className="wrap">
           <h2>Os combinados</h2>
