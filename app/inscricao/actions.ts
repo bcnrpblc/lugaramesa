@@ -1,6 +1,7 @@
 "use server";
 
 import { db } from "@/lib/db";
+import { FOOD_VALUES } from "@/lib/foods";
 
 const CONSENT_VERSION = "2026-11-v1";
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
@@ -55,6 +56,7 @@ export async function submitSignup(input: Record<string, unknown>): Promise<Sign
     return (ONE[k] as readonly string[]).includes(v) ? v : null;
   };
   const allergies = Array.isArray(input.allergies) ? input.allergies.filter((a): a is string => typeof a === "string" && ALLERGIES.includes(a)) : [];
+  const foods = Array.isArray(input.foods) ? input.foods.filter((f): f is string => typeof f === "string" && FOOD_VALUES.includes(f)) : [];
   const hasHealth = allergies.some((a) => a !== "nenhuma") || !!str(input.allergy_notes);
   if (hasHealth && input.consent_health !== true) return { ok: false, error: "Precisamos do seu ok para usar as informações de alergia." };
 
@@ -80,11 +82,11 @@ export async function submitSignup(input: Record<string, unknown>): Promise<Sign
       }
       const ins = await tx`
         insert into guests (email, name, whatsapp, age_range, life_stage, allergies, allergy_notes, never_eats, wine, friday_ok,
-          base_hosted, base_been_hosted, base_friends, would_host, cooks_for_groups, home_dish, life_answer, referred_by, consent_at, consent_version)
+          base_hosted, base_been_hosted, base_friends, would_host, cooks_for_groups, home_dish, life_answer, foods, referred_by, consent_at, consent_version)
         values (${email}, ${name}, ${whatsapp}, ${pick("age_range")}, ${pick("life_stage")}, ${allergies}, ${str(input.allergy_notes) || null},
           ${str(input.never_eats) || null}, ${pick("wine")}, ${pick("friday_ok")}, ${pick("base_hosted")}, ${pick("base_been_hosted")},
           ${pick("base_friends")}, ${pick("would_host")}, ${pick("cooks_for_groups")}, ${str(input.home_dish) || null},
-          ${str(input.life_answer, 280) || null}, ${referredBy}, now(), ${CONSENT_VERSION})
+          ${str(input.life_answer, 280) || null}, ${foods}, ${referredBy}, now(), ${CONSENT_VERSION})
         on conflict (email) do nothing
         returning id, referral_code, partner_code`;
       if (!ins[0]) return null;

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Flow, { type Step, type Values } from "@/components/Flow";
+import { FOODS } from "@/lib/foods";
 import { codeStatus, emailStatus, submitSignup } from "./actions";
 
 const hasHealth = (v: Values) => ((v.allergies as string[]) || []).some((a) => a !== "nenhuma") || !!(v.allergy_notes as string)?.trim();
@@ -21,7 +22,7 @@ const STEPS: Step[] = [
       const s = await emailStatus(String(v));
       return s === "exists" ? "Esse e-mail já está na lista. Quando abrir uma mesa pra você, a mensagem chega." : s === "invalid" ? "Confere o e-mail?" : null;
     } },
-  { id: "name", kind: "text", title: "Como podemos te chamar?", placeholder: "Seu nome", maxLength: 80 },
+  { id: "name", kind: "text", title: "Como posso te chamar?", placeholder: "Seu nome", maxLength: 80 },
   { id: "whatsapp", kind: "tel", title: "Seu WhatsApp", help: "O convite chega por lá, 2 a 3 semanas antes do jantar.", placeholder: "(11) 98765-4321",
     validate: (v) => (String(v || "").replace(/\D/g, "").length >= 10 ? null : "Coloca o número com DDD.") },
   { id: "age_range", kind: "single", title: "Sua faixa de idade", help: "Ajuda a montar mesas misturadas.", options: [
@@ -29,12 +30,13 @@ const STEPS: Step[] = [
   { id: "life_stage", kind: "single", title: "Em que momento da vida você está?", options: [
     { value: "solteiro", label: "Solteiro(a)" }, { value: "namorando", label: "Namorando" }, { value: "casado", label: "Casado(a), sem filhos" },
     { value: "casado-filhos", label: "Com filhos" }, { value: "outro", label: "Outro / prefiro não dizer" } ] },
-  { id: "allergies", kind: "multi", title: "Alguma alergia ou restrição alimentar?", help: "Usado só para pensar o cardápio. Fica só com o anfitrião.",
+  { id: "allergies", kind: "multi", title: "Alguma alergia ou restrição alimentar?", help: "Usado só para pensar o cardápio. Pode marcar mais de uma.",
     options: [
       { value: "nenhuma", label: "Nenhuma", exclusive: true }, { value: "lactose", label: "Lactose" }, { value: "gluten", label: "Glúten" },
       { value: "frutos-do-mar", label: "Frutos do mar" }, { value: "castanhas", label: "Amendoim ou castanhas" }, { value: "ovo", label: "Ovo" },
       { value: "vegetariano", label: "Vegetariano(a)" }, { value: "vegano", label: "Vegano(a)" }, { value: "outra", label: "Outra" } ],
     notesKey: "allergy_notes", notesPlaceholder: "Quer detalhar? (ex.: alergia grave a camarão)" },
+  { id: "foods", kind: "multi", title: "Que comida faz seus olhos brilharem?", help: "Pode marcar mais de uma.", options: FOODS },
   { id: "never_eats", kind: "text", optional: true, title: "Algo que você não come de jeito nenhum?", help: "Não é alergia, é gosto mesmo. Pode pular.", placeholder: "Ex.: coentro, fígado" },
   { id: "wine", kind: "single", optional: true, title: "Topa vinho na mesa?", help: "Só tem vinho se todo mundo da mesa topar. Sem resposta conta como não.", options: [
     { value: "sim", label: "Topo" }, { value: "nao", label: "Prefiro sem" } ] },
@@ -42,7 +44,7 @@ const STEPS: Step[] = [
     { value: "sim", label: "Funciona, quase sempre" }, { value: "as-vezes", label: "Às vezes" }, { value: "dificil", label: "É difícil" } ] },
   { id: "base_hosted", kind: "single", title: "Nos últimos 3 meses, quantas vezes você recebeu alguém em casa para uma refeição?", options: RANGE3 },
   { id: "base_been_hosted", kind: "single", title: "E quantas vezes você foi recebido(a) na casa de alguém?", help: "Também nos últimos 3 meses.", options: RANGE3 },
-  { id: "base_friends", kind: "single", title: "Quantos amigos você encontra fora da igreja ou do trabalho pelo menos 1 vez por mês?", options: [
+  { id: "base_friends", kind: "single", title: "Quantos amigos você encontra fora do trabalho, da igreja ou da faculdade pelo menos 1 vez por mês?", options: [
     { value: "0", label: "Nenhum" }, { value: "1-2", label: "1 ou 2" }, { value: "3-5", label: "3 a 5" }, { value: "6+", label: "6 ou mais" } ] },
   { id: "would_host", kind: "single", title: "Você toparia abrir sua casa para um encontro?", help: "Um dia. Sem compromisso.", options: [
     { value: "sim", label: "Toparia" }, { value: "talvez", label: "Talvez, um dia" }, { value: "nao", label: "Acho que não" } ] },

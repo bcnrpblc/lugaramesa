@@ -22,7 +22,8 @@ a{color:inherit}
 .notice{background:var(--pink);font-size:.85rem;font-weight:500}
 .notice .wrap{padding-block:.55em;display:flex;gap:.6em;align-items:center}
 .notice b{font-family:var(--display);font-weight:900;text-transform:uppercase;font-size:.78rem}
-header.nav{background:var(--white);border-bottom:1px solid var(--line)}
+header.nav{position:sticky;top:0;z-index:50;background:var(--white);border-bottom:1px solid var(--line)}
+[id]{scroll-margin-top:80px}
 header.nav .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-block:16px}
 .logo{font:900 1.15rem/1 var(--display);text-transform:uppercase;letter-spacing:-.03em;text-decoration:none;display:flex;align-items:center;gap:.45em}
 .logo i{width:20px;height:20px;border-radius:50%;background:var(--ink);box-shadow:7px 0 0 var(--hot)}
@@ -116,14 +117,17 @@ header.nav .wrap{display:flex;align-items:center;justify-content:space-between;g
 
 /* ready + form */
 .ready .wrap{padding-block:96px 72px;display:grid;justify-items:center;text-align:center;gap:28px}
-.ready h2{font-size:clamp(2.8rem,8vw,6rem)}
+.ready h2{font-size:clamp(2.8rem,8vw,6rem);line-height:1.08}
 .steps{list-style:none;padding:0;margin:0;display:flex;flex-wrap:wrap;justify-content:center;gap:14px 36px}
 .steps li{display:flex;align-items:center;gap:10px;font-size:.95rem}
 .steps .n{width:26px;height:26px;border-radius:50%;background:var(--white);color:var(--ink);display:grid;place-items:center;font:900 .8rem var(--display)}
 
 footer{background:var(--black);color:var(--white)}
-.news{background:var(--pink);color:var(--ink)}
-.news .wrap{padding-block:18px;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px;font:800 1rem var(--display)}
+footer>.wrap{padding-block:56px}
+.news{position:relative;background:var(--pink);color:var(--ink);border-radius:4px;padding:32px 36px 32px 56px;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:16px;font:800 clamp(1.05rem,2vw,1.35rem) var(--display);letter-spacing:-.01em}
+/* ticket notch: footer-colored cusp cut into the left edge */
+.news::before{content:"";position:absolute;left:-1px;top:50%;width:24px;height:26px;margin-top:-13px;background:var(--black);clip-path:path("M0 0C2 7 10 12 23 13C10 14 2 19 0 26Z")}
+footer .base{border-top:1px solid #222}
 footer .base .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:16px;padding-block:28px;font-size:.82rem;color:#9a9aa3}
 
 }

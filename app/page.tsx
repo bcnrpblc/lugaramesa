@@ -120,12 +120,12 @@ export default function Home() {
 
         <section className="black ready" id="lista"><div className="wrap">
           <h2 className="caps">Quero meu lugar à mesa</h2>
+          <Link className="btn btn-hot" href="/inscricao" style={{ fontSize: ".95rem", padding: "1.1em 2em" }}>Quero meu lugar à mesa</Link>
           <ol className="steps">
             <li><span className="n">1</span>Inscreva-se em 2 minutos</li>
             <li><span className="n">2</span>Receba o convite 2 a 3 semanas antes</li>
-            <li><span className="n">3</span>Sexta, 20h. Traga só você</li>
+            <li><span className="n">3</span>Vem pra mesa!</li>
           </ol>
-          <Link className="btn btn-hot" href="/inscricao" style={{ fontSize: ".95rem", padding: "1.1em 2em" }}>Quero meu lugar à mesa</Link>
           <p style={{ fontSize: ".85rem", color: "#9a9aa3" }}>Seus dados ficam só com o anfitrião. Sem spam, sem grupo de WhatsApp.</p>
         </div></section>
       </main>

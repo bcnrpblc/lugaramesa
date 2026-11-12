@@ -7,7 +7,7 @@ import { linkPartner, saveGuest, unlinkPartner } from "../../actions";
 
 const LABELS: Record<string, string> = {
   email: "E-mail", whatsapp: "WhatsApp", age_range: "Idade", life_stage: "Momento", friday_ok: "Sexta funciona",
-  wine: "Vinho", never_eats: "Não come", would_host: "Abriria a casa", cooks_for_groups: "Cozinha p/ grupos", home_dish: "Prato que lembra casa",
+  wine: "Vinho", never_eats: "Não come", would_host: "Abriria a casa", cooks_for_groups: "Cozinha p/ grupos", home_dish: "Prato que lembra casa", foods: "Comidas favoritas",
   life_answer: "Uma primeira vez recente", base_hosted: "Recebeu (3 meses)", base_been_hosted: "Foi recebido (3 meses)", base_friends: "Amigos/mês",
 };
 
@@ -35,7 +35,7 @@ export default async function Page({ params, searchParams }: { params: Promise<{
           <h2 className="mb-3 font-bold">Inscrição</h2>
           <dl className="grid gap-2 text-sm">
             {allergies.length > 0 && <div><dt className="text-xs uppercase text-muted">Alergias</dt><dd className="font-semibold">⚠ {allergies.join(", ")}{g.allergy_notes ? ` (${g.allergy_notes})` : ""}</dd></div>}
-            {Object.entries(LABELS).map(([k, l]) => g[k] ? <div key={k}><dt className="text-xs uppercase text-muted">{l}</dt><dd>{String(g[k])}</dd></div> : null)}
+            {Object.entries(LABELS).map(([k, l]) => (Array.isArray(g[k]) ? g[k].length : g[k]) ? <div key={k}><dt className="text-xs uppercase text-muted">{l}</dt><dd>{Array.isArray(g[k]) ? g[k].join(", ") : String(g[k])}</dd></div> : null)}
             {g.referrer && <div><dt className="text-xs uppercase text-muted">Indicado por</dt><dd>{g.referrer}</dd></div>}
             <div><dt className="text-xs uppercase text-muted">Inscrito em</dt><dd>{shortDate(g.created_at)}</dd></div>
           </dl>

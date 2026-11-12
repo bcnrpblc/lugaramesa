@@ -25,7 +25,7 @@ create table if not exists guests (
   friday_ok         text,
   base_hosted       text,   -- baseline: hosted a meal, last 3 months
   base_been_hosted  text,   -- baseline: been hosted, last 3 months
-  base_friends      text,   -- baseline: friends met 1x/month outside church/work
+  base_friends      text,   -- baseline: friends met 1x/month outside work/church/college
   would_host        text,
   cooks_for_groups  text,
   home_dish         text,
@@ -137,6 +137,7 @@ create table if not exists parties (
 alter table guests add column if not exists party_id     uuid references parties(id) on delete set null;
 alter table guests add column if not exists partner_code text unique default upper(substr(replace(gen_random_uuid()::text,'-',''),1,6));
 alter table guests add column if not exists life_answer  text;   -- optional: "uma primeira vez recente"
+alter table guests add column if not exists foods        text[] not null default '{}';   -- favorite kinds of food (multi)
 update guests set partner_code = upper(substr(replace(gen_random_uuid()::text,'-',''),1,6)) where partner_code is null;
 alter table guests alter column partner_code set not null;
 
@@ -234,6 +235,9 @@ create trigger log_guest after update on guests for each row execute function lo
 
 create index if not exists guests_party_idx on guests(party_id);
 create index if not exists invitations_guest_idx on invitations(guest_id);
+
+-- Views hold no data; drop so column changes re-apply cleanly (create or replace can't reorder/rename columns).
+drop view if exists admin_queue, admin_invites, admin_tables, admin_waitlist;
 
 -- Ranked waitlist ("who's next"). tier: 0 never invited, 1 marked re-invite, 2 other, 9 out (3+ invites or reinvite=false).
 create or replace view admin_queue with (security_invoker = true) as

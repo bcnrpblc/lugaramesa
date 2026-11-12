@@ -6,7 +6,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 export type Value = string | string[] | boolean | undefined;
 export type Values = Record<string, Value>;
-export type Option = { value: string; label: string; exclusive?: boolean };
+export type Option = { value: string; label: string; exclusive?: boolean; emoji?: string };
 
 export type Step = {
   id: string;
@@ -201,7 +201,7 @@ export default function Flow({ steps, initial = {}, submitLabel, onSubmit, intro
               <button type="button" className="pill pill-line" onClick={() => { set(step.id, undefined); setDir(1); setIdx((i) => i + 1); }} disabled={busy}>Pular</button>
             )}
             {(!autoAdvance || isLast) && (
-              <button type="button" className={`pill ${isLast ? "pill-hot" : "pill-ink"}`} onClick={() => next()} disabled={busy}>
+              <button type="button" className="pill pill-hot" onClick={() => next()} disabled={busy}>
                 {busy ? "Enviando…" : isLast ? submitLabel : step.optional && isEmpty(values[step.id]) ? "Pular →" : "Continuar →"}
               </button>
             )}
@@ -254,6 +254,16 @@ function StepBody({ step, values, set, pick }: { step: Step; values: Values; set
     case "single":
     case "multi": {
       const sel = step.kind === "multi" ? ((v as string[]) || []) : [v as string];
+      if (step.options![0]?.emoji) return (
+        <div role="group" aria-labelledby={`q-${step.id}`} className="flex flex-wrap gap-2 max-w-[640px]">
+          {step.options!.map((o) => (
+            <button key={o.value} type="button" className="choice !w-auto !rounded-full !gap-2 !px-3.5 !py-2 text-[.95rem]" role="checkbox" aria-checked={sel.includes(o.value)} onClick={() => pick(o)}>
+              <span aria-hidden className="text-[1.15rem] leading-none">{o.emoji}</span>
+              <span>{o.label}</span>
+            </button>
+          ))}
+        </div>
+      );
       return (
         <div>
           <div role={step.kind === "single" ? "radiogroup" : "group"} aria-labelledby={`q-${step.id}`} className="grid gap-2.5 max-w-[520px]">
@@ -275,7 +285,6 @@ function StepBody({ step, values, set, pick }: { step: Step; values: Values; set
               );
             })}
           </div>
-          {step.kind === "multi" && <p className="mt-3 text-sm text-muted">Pode marcar mais de uma.</p>}
           {step.notesKey && (
             <input
               className="field mt-8 !text-[1.15rem]"
