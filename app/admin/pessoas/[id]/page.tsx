@@ -4,6 +4,9 @@ import { Shell, Card, input, btnInk, btnSmall } from "@/components/admin/Shell";
 import { requireAdmin, shortDate, STATUS_LABEL, STATUS_COLOR } from "@/lib/admin";
 import { db } from "@/lib/db";
 import { linkPartner, saveGuest, unlinkPartner } from "../../actions";
+import { Avatar } from "@/components/admin/Avatar";
+import { CopyButton } from "@/components/CopyButton";
+import { siteUrl } from "@/lib/format";
 
 const LABELS: Record<string, string> = {
   email: "E-mail", whatsapp: "WhatsApp", age_range: "Idade", life_stage: "Momento", friday_ok: "Sexta funciona",
@@ -19,19 +22,29 @@ export default async function Page({ params, searchParams }: { params: Promise<{
   const sql = db();
   const [g] = await sql`select g.*, r.name as referrer from guests g left join guests r on r.id = g.referred_by where g.id = ${id}`;
   if (!g) notFound();
-  const [partner, invites, log, others] = await Promise.all([
+  const [partner, invites, log, others, extra] = await Promise.all([
     g.party_id ? sql`select id, name from guests where party_id = ${g.party_id} and id <> ${id}` : Promise.resolve([]),
     sql`select i.id, i.status, i.attended, i.host_rating, i.host_note, i.reinvite, t.id as table_id, t.title, t.starts_at
         from invitations i join dinner_tables t on t.id = i.table_id where i.guest_id = ${id} order by t.starts_at desc`,
     sql`select at, kind, changes from event_log where guest_id = ${id} order by at desc limit 30`,
     g.party_id ? Promise.resolve([]) : sql`select id, name from guests where id <> ${id} and party_id is null order by name limit 500`,
+    sql`select exists(select 1 from guest_photos where guest_id = ${id}) as has_photo,
+        coalesce((select array_agg(to_char(day, 'DD/MM') order by day) from availability where guest_id = ${id} and day >= current_date), '{}') as free`,
   ]);
+  const euLink = `${siteUrl()}/eu/${g.guest_token}`;
   const allergies = (g.allergies as string[]).filter((a) => a !== "nenhuma");
 
   return (
     <Shell title={g.name} erro={sp.erro} ok={sp.ok === "1"}>
       <div className="grid gap-5 lg:grid-cols-2">
         <Card>
+          <div className="mb-4 flex items-center gap-4">
+            <Avatar id={id} name={g.name} has={extra[0].has_photo} size={88} />
+            <div className="grid gap-1 text-sm">
+              <p><b>Sextas livres:</b> {extra[0].free.length ? extra[0].free.join(", ") : "não marcou"}</p>
+              <div className="flex flex-wrap items-center gap-2"><span className="text-muted">Página da pessoa:</span><CopyButton text={euLink} label="Copiar link" className={btnSmall} /></div>
+            </div>
+          </div>
           <h2 className="mb-3 font-bold">Inscrição</h2>
           <dl className="grid gap-2 text-sm">
             {allergies.length > 0 && <div><dt className="text-xs uppercase text-muted">Alergias</dt><dd className="font-semibold">⚠ {allergies.join(", ")}{g.allergy_notes ? ` (${g.allergy_notes})` : ""}</dd></div>}

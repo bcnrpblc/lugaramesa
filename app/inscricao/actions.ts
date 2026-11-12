@@ -38,7 +38,7 @@ export async function codeStatus(code: string): Promise<"ok" | "empty" | "unknow
   return r[0].used >= MAX_REFERRALS ? "full" : "ok";
 }
 
-export type SignupResult = { ok: true; code: string; name: string; partnerCode: string | null } | { ok: false; error: string };
+export type SignupResult = { ok: true; code: string; name: string; partnerCode: string | null; guestToken: string; nominated: boolean } | { ok: false; error: string };
 
 export async function submitSignup(input: Record<string, unknown>): Promise<SignupResult> {
   if (str(input.website)) return { ok: false, error: "Erro." }; // honeypot
@@ -60,6 +60,7 @@ export async function submitSignup(input: Record<string, unknown>): Promise<Sign
 
   const code = str(input.ref, 20).toUpperCase().replace(/[^A-Z0-9]/g, "");
   const par = str(input.par, 20).toUpperCase().replace(/[^A-Z0-9]/g, "");
+  const indica = /^[0-9a-f-]{36}$/.test(str(input.indica, 40)) ? str(input.indica, 40) : null;
   const sql = db();
   try {
     const row = await sql.begin(async (tx) => {
@@ -86,16 +87,26 @@ export async function submitSignup(input: Record<string, unknown>): Promise<Sign
           ${pick("base_friends")}, ${pick("would_host")}, ${pick("cooks_for_groups")}, ${str(input.home_dish) || null},
           ${str(input.life_answer, 280) || null}, ${referredBy}, now(), ${CONSENT_VERSION})
         on conflict (email) do nothing
-        returning id, referral_code, partner_code`;
+        returning id, referral_code, partner_code, guest_token`;
       if (!ins[0]) return null;
       if (partner) {
         const party = partner.party_id ?? (await tx`insert into parties default values returning id`)[0].id;
         await tx`update guests set party_id = ${party} where id in (${partner.id}, ${ins[0].id})`;
       }
-      return { referral_code: ins[0].referral_code as string, partner_code: partner ? null : (ins[0].partner_code as string) };
+      // Nominated for an open seat by a confirmed guest: host approves in /admin.
+      let nominated = false;
+      if (indica) {
+        const n = await tx`
+          insert into nominations (table_id, nominator_id, nominee_id)
+          select i.table_id, i.id, ${ins[0].id} from invitations i join dinner_tables t on t.id = i.table_id
+          where i.id = ${indica} and i.rsvp = 'sim' and i.removed_at is null and t.allow_nominations and t.starts_at > now()
+          on conflict do nothing returning 1`;
+        nominated = n.length > 0;
+      }
+      return { referral_code: ins[0].referral_code as string, partner_code: partner ? null : (ins[0].partner_code as string), guest_token: ins[0].guest_token as string, nominated };
     });
     if (!row) return { ok: false, error: "Esse e-mail já está na lista." };
-    return { ok: true, code: row.referral_code, name: name.split(" ")[0], partnerCode: row.partner_code };
+    return { ok: true, code: row.referral_code, name: name.split(" ")[0], partnerCode: row.partner_code, guestToken: row.guest_token, nominated: row.nominated };
   } catch (e) {
     console.error("signup failed", e);
     return { ok: false, error: "Não conseguimos salvar agora. Tenta de novo em instantes?" };

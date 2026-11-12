@@ -259,6 +259,62 @@ select g.id, g.name, g.whatsapp, g.created_at, g.age_range, g.life_stage, g.frid
             else 2 end as tier
 from guests g join h on h.id = g.id;
 
+-- =====================================================================
+-- v3 (2026-11-12): guest page, photos, free Fridays, nominations.
+-- =====================================================================
+
+-- Personal guest page /eu/{guest_token} (no login).
+alter table guests add column if not exists guest_token text unique default lower(substr(replace(gen_random_uuid()::text,'-','') || replace(gen_random_uuid()::text,'-',''),1,24));
+update guests set guest_token = lower(substr(replace(gen_random_uuid()::text,'-','') || replace(gen_random_uuid()::text,'-',''),1,24)) where guest_token is null;
+alter table guests alter column guest_token set not null;
+
+-- Photo: optional, own consent, stored in the DB (small JPEG, ~50 KB). Deleting the guest deletes it.
+create table if not exists guest_photos (
+  guest_id    uuid primary key references guests(id) on delete cascade,
+  data        bytea not null check (octet_length(data) <= 400000),
+  mime        text not null default 'image/jpeg' check (mime = 'image/jpeg'),
+  consent_at  timestamptz not null,
+  updated_at  timestamptz not null default now()
+);
+
+-- Fridays (or any day) the guest says they are free.
+create table if not exists availability (
+  guest_id    uuid not null references guests(id) on delete cascade,
+  day         date not null,
+  created_at  timestamptz not null default now(),
+  primary key (guest_id, day)
+);
+create index if not exists availability_day_idx on availability(day);
+
+-- A confirmed guest suggests a friend for an open seat. Host approves or declines.
+alter table dinner_tables add column if not exists allow_nominations boolean not null default false;
+create table if not exists nominations (
+  id                 uuid primary key default gen_random_uuid(),
+  created_at         timestamptz not null default now(),
+  table_id           uuid not null references dinner_tables(id) on delete cascade,
+  nominator_id       uuid not null references invitations(id) on delete cascade,
+  nominee_id         uuid not null references guests(id) on delete cascade,
+  status             text not null default 'pendente' check (status in ('pendente','aprovada','recusada')),
+  decided_at         timestamptz,
+  unique (table_id, nominee_id),
+  unique (nominator_id)            -- one friend per guest per table
+);
+create index if not exists nominations_table_idx on nominations(table_id);
+
+alter table guest_photos enable row level security;
+alter table availability enable row level security;
+alter table nominations  enable row level security;
+
+create or replace function log_nomination() returns trigger language plpgsql as $$
+begin
+  insert into event_log(kind, guest_id, table_id, changes)
+    values ('nomination.' || lower(tg_op), new.nominee_id, new.table_id,
+            jsonb_build_object('status', new.status, 'nominator_invitation', new.nominator_id));
+  return new;
+end $$;
+drop trigger if exists log_nomination on nominations;
+create trigger log_nomination after insert or update of status on nominations for each row execute function log_nomination();
+
 -- ---------- Admin views (use in Supabase > Table Editor / SQL) ----------
 
 -- Who is invited where, with the link to send on WhatsApp.

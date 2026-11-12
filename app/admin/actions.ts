@@ -210,3 +210,69 @@ export async function unlinkPartner(f: FormData) {
   await db()`update guests set party_id = null where party_id = (select party_id from guests where id = ${gid}) and party_id is not null`;
   back(`/admin/pessoas/${gid}`);
 }
+
+// ---------- nominations ----------
+export async function toggleNominations(f: FormData) {
+  await requireAdmin();
+  const tid = id(f, "table_id");
+  await db()`update dinner_tables set allow_nominations = not allow_nominations where id = ${tid}`;
+  back(`/admin/mesa/${tid}`);
+}
+
+export async function decideNomination(f: FormData) {
+  await requireAdmin();
+  const nid = id(f, "nomination_id");
+  const approve = f.get("decision") === "aprovar";
+  const r = await db()`select table_id, nominee_id, status from nominations where id = ${nid}`;
+  if (!r.length) redirect("/admin");
+  const { table_id: tid, nominee_id } = r[0];
+  const path = `/admin/mesa/${tid}`;
+  if (r[0].status !== "pendente") return back(path);
+  try {
+    await db().begin(async (tx) => {
+      if (approve) {
+        // Takes the place of the oldest unreplaced drop-out, if any.
+        const open = await tx`
+          select i.id from invitations i where i.table_id = ${tid} and i.rsvp = 'nao' and i.removed_at is null
+            and not exists (select 1 from invitations x where x.replaces_id = i.id and x.removed_at is null)
+          order by i.rsvp_at nulls last limit 1`;
+        await tx`
+          insert into invitations (guest_id, table_id, replaces_id) values (${nominee_id}, ${tid}, ${open[0]?.id ?? null})
+          on conflict (guest_id, table_id) do update set removed_at = null, rsvp = 'pendente', rsvp_at = null, sent_at = null`;
+      }
+      await tx`update nominations set status = ${approve ? "aprovada" : "recusada"}, decided_at = now() where id = ${nid}`;
+    });
+  } catch (e) { return back(path, dbError(e)); }
+  back(path);
+}
+
+// ---------- drag-and-drop board ----------
+/** Called from the board (client). Seat from queue, move between tables, or drop back to the queue (remove). */
+export async function boardMove(input: { guestId: string; fromInvitation?: string | null; toTable?: string | null; withPartner?: boolean }) {
+  await requireAdmin();
+  const { guestId, fromInvitation, toTable, withPartner } = input;
+  if (!UUID.test(guestId) || (fromInvitation && !UUID.test(fromInvitation)) || (toTable && !UUID.test(toTable))) return { ok: false, error: "Dados inválidos." };
+  try {
+    await db().begin(async (tx) => {
+      if (fromInvitation) {
+        const cur = await tx`select table_id from invitations where id = ${fromInvitation} and guest_id = ${guestId}`;
+        if (!cur.length) throw new Error("not found");
+        if (cur[0].table_id === toTable) return;
+        await tx`update invitations set removed_at = now() where id = ${fromInvitation}`;
+      }
+      if (!toTable) return;
+      const ids = [guestId];
+      if (withPartner && !fromInvitation) {
+        const p = await tx`select p.id from guests g join guests p on p.party_id = g.party_id and p.id <> g.id where g.id = ${guestId}`;
+        ids.push(...p.map((r) => r.id as string));
+      }
+      for (const g of ids) {
+        await tx`
+          insert into invitations (guest_id, table_id) values (${g}, ${toTable})
+          on conflict (guest_id, table_id) do update set removed_at = null, rsvp = 'pendente', rsvp_at = null, sent_at = null`;
+      }
+    });
+  } catch (e) { return { ok: false, error: dbError(e) }; }
+  revalidatePath("/admin/quadro");
+  return { ok: true };
+}

@@ -62,19 +62,19 @@ const STEPS: Step[] = [
     ] },
 ];
 
-export default function Signup({ refCode, parCode, parName }: { refCode: string; parCode?: string; parName?: string }) {
+export default function Signup({ refCode, parCode, parName, nomination }: { refCode: string; parCode?: string; parName?: string; nomination?: { id: string; label: string } }) {
   const router = useRouter();
-  const steps = parCode ? STEPS.filter((s) => s.id !== "ref") : STEPS;
+  const steps = parCode || nomination ? STEPS.filter((s) => s.id !== "ref") : STEPS;
   return (
     <Flow
       steps={steps}
-      initial={{ ...(refCode ? { ref: refCode } : {}), ...(parCode ? { par: parCode } : {}) }}
+      initial={{ ...(refCode ? { ref: refCode } : {}), ...(parCode ? { par: parCode } : {}), ...(nomination ? { indica: nomination.id } : {}) }}
       submitLabel="Quero meu lugar à mesa"
-      intro={<p className="eyebrow mb-5 text-muted">{parName ? `Inscrição · vem com ${parName}` : "Inscrição · 2 minutos"}</p>}
+      intro={<p className="eyebrow mb-5 text-muted">{nomination ? nomination.label : parName ? `Inscrição · vem com ${parName}` : "Inscrição · 2 minutos"}</p>}
       onSubmit={async (v) => {
         const r = await submitSignup(v as Record<string, unknown>);
         if (!r.ok) return r.error;
-        router.push(`/obrigado?c=${encodeURIComponent(r.code)}&n=${encodeURIComponent(r.name)}${r.partnerCode ? `&p=${encodeURIComponent(r.partnerCode)}` : ""}`);
+        router.push(`/obrigado?c=${encodeURIComponent(r.code)}&n=${encodeURIComponent(r.name)}${r.partnerCode ? `&p=${encodeURIComponent(r.partnerCode)}` : ""}&g=${encodeURIComponent(r.guestToken)}${r.nominated ? "&i=1" : ""}`);
         return null;
       }}
     />

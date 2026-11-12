@@ -6,8 +6,9 @@ import { siteUrl } from "@/lib/format";
 
 export const metadata: Metadata = { title: "Você está na lista", robots: { index: false } };
 
-export default async function Page({ searchParams }: { searchParams: Promise<{ c?: string; n?: string; p?: string }> }) {
-  const { c = "", n = "", p = "" } = await searchParams;
+export default async function Page({ searchParams }: { searchParams: Promise<{ c?: string; n?: string; p?: string; g?: string; i?: string }> }) {
+  const { c = "", n = "", p = "", g = "", i = "" } = await searchParams;
+  const gtok = /^[a-z0-9]{16,40}$/.test(g) ? g : "";
   const par = p.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 12);
   const parLink = `${siteUrl()}/inscricao?par=${par}`;
   const parWa = `https://wa.me/?text=${encodeURIComponent(`Me inscrevi no Um Lugar à Mesa. Faz a sua por este link pra gente ir junto: ${parLink}`)}`;
@@ -23,6 +24,8 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ c
           <h1 className="caps">Tem lugar<br />pra você{name ? `, ${name}` : ""}.</h1>
           <div className="hero-side">
             <span className="eyebrow">Inscrição recebida</span>
+            {i === "1" && <p><b>Sua indicação foi para o anfitrião.</b> Se der certo, o convite chega no seu WhatsApp.</p>}
+            {gtok && <p><Link className="link" href={`/eu/${gtok}`}>Seu espaço: marque suas sextas livres e mande uma foto (opcional).</Link> Guarde este link.</p>}
             <p>Você está na lista. Quando abrir uma mesa que combina com você, o convite chega no seu WhatsApp, 2 a 3 semanas antes.</p>
             <Link className="btn btn-line" href="/">Voltar ao início</Link>
           </div>
