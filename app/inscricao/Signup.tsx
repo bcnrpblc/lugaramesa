@@ -49,6 +49,7 @@ const STEPS: Step[] = [
   { id: "cooks_for_groups", kind: "single", title: "Você gosta ou sabe cozinhar para muita gente?", options: [
     { value: "sim", label: "Gosto e sei" }, { value: "aprendendo", label: "Gosto, mas tô aprendendo" }, { value: "nao", label: "Prefiro só comer" } ] },
   { id: "home_dish", kind: "text", optional: true, title: "Um prato que te lembra casa", help: "Pode pular. Mas a gente adora saber.", placeholder: "Ex.: o feijão da minha avó", maxLength: 120 },
+  { id: "life_answer", kind: "textarea", optional: true, title: "Qual foi a última vez que você fez algo pela primeira vez?", help: "Uma viagem, uma comida, uma coragem. Pode pular.", placeholder: "Ex.: mês passado aprendi a nadar", maxLength: 280 },
   { id: "ref", kind: "text", optional: true, title: "Alguém te chamou?", help: "Se você recebeu um código de convite, coloca aqui. Se não, é só seguir.", placeholder: "Código (ex.: 7F3A9C)", maxLength: 12,
     check: async (v) => {
       const s = await codeStatus(String(v || ""));
@@ -61,18 +62,19 @@ const STEPS: Step[] = [
     ] },
 ];
 
-export default function Signup({ refCode }: { refCode: string }) {
+export default function Signup({ refCode, parCode, parName }: { refCode: string; parCode?: string; parName?: string }) {
   const router = useRouter();
+  const steps = parCode ? STEPS.filter((s) => s.id !== "ref") : STEPS;
   return (
     <Flow
-      steps={STEPS}
-      initial={refCode ? { ref: refCode } : {}}
+      steps={steps}
+      initial={{ ...(refCode ? { ref: refCode } : {}), ...(parCode ? { par: parCode } : {}) }}
       submitLabel="Quero meu lugar à mesa"
-      intro={<p className="eyebrow mb-5 text-muted">Inscrição · 2 minutos</p>}
+      intro={<p className="eyebrow mb-5 text-muted">{parName ? `Inscrição · vem com ${parName}` : "Inscrição · 2 minutos"}</p>}
       onSubmit={async (v) => {
         const r = await submitSignup(v as Record<string, unknown>);
         if (!r.ok) return r.error;
-        router.push(`/obrigado?c=${encodeURIComponent(r.code)}&n=${encodeURIComponent(r.name)}`);
+        router.push(`/obrigado?c=${encodeURIComponent(r.code)}&n=${encodeURIComponent(r.name)}${r.partnerCode ? `&p=${encodeURIComponent(r.partnerCode)}` : ""}`);
         return null;
       }}
     />

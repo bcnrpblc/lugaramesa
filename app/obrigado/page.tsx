@@ -6,8 +6,11 @@ import { siteUrl } from "@/lib/format";
 
 export const metadata: Metadata = { title: "Você está na lista", robots: { index: false } };
 
-export default async function Page({ searchParams }: { searchParams: Promise<{ c?: string; n?: string }> }) {
-  const { c = "", n = "" } = await searchParams;
+export default async function Page({ searchParams }: { searchParams: Promise<{ c?: string; n?: string; p?: string }> }) {
+  const { c = "", n = "", p = "" } = await searchParams;
+  const par = p.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 12);
+  const parLink = `${siteUrl()}/inscricao?par=${par}`;
+  const parWa = `https://wa.me/?text=${encodeURIComponent(`Me inscrevi no Um Lugar à Mesa. Faz a sua por este link pra gente ir junto: ${parLink}`)}`;
   const code = c.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 12);
   const name = n.replace(/[<>&"]/g, "").slice(0, 40);
   const link = `${siteUrl()}/inscricao?ref=${code}`;
@@ -37,6 +40,17 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ c
                   <CopyButton text={link} label="Copiar link" className="btn btn-line" />
                 </div>
               </article>
+              {par && (
+                <article className="box" style={{ background: "var(--cyan)" }}>
+                  <span className="eyebrow tag">Vem em casal?</span>
+                  <h3>Seu par faz a própria inscrição</h3>
+                  <p>Cada um responde as suas alergias e preferências. Por este link vocês ficam ligados e sentam juntos.</p>
+                  <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                    <a className="btn btn-line" href={parWa} target="_blank" rel="noopener">Mandar pro meu par</a>
+                    <CopyButton text={parLink} label="Copiar link" className="btn btn-line" />
+                  </div>
+                </article>
+              )}
               <article className="box dark">
                 <span className="eyebrow tag">Até lá</span>
                 <h3>Nada pra fazer</h3>

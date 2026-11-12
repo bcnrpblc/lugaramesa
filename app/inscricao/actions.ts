@@ -38,7 +38,7 @@ export async function codeStatus(code: string): Promise<"ok" | "empty" | "unknow
   return r[0].used >= MAX_REFERRALS ? "full" : "ok";
 }
 
-export type SignupResult = { ok: true; code: string; name: string } | { ok: false; error: string };
+export type SignupResult = { ok: true; code: string; name: string; partnerCode: string | null } | { ok: false; error: string };
 
 export async function submitSignup(input: Record<string, unknown>): Promise<SignupResult> {
   if (str(input.website)) return { ok: false, error: "Erro." }; // honeypot
@@ -59,6 +59,7 @@ export async function submitSignup(input: Record<string, unknown>): Promise<Sign
   if (hasHealth && input.consent_health !== true) return { ok: false, error: "Precisamos do seu ok para usar as informações de alergia." };
 
   const code = str(input.ref, 20).toUpperCase().replace(/[^A-Z0-9]/g, "");
+  const par = str(input.par, 20).toUpperCase().replace(/[^A-Z0-9]/g, "");
   const sql = db();
   try {
     const row = await sql.begin(async (tx) => {
@@ -67,19 +68,34 @@ export async function submitSignup(input: Record<string, unknown>): Promise<Sign
         const r = await tx`select g.id, (select count(*) from guests x where x.referred_by = g.id)::int as used from guests g where g.referral_code = ${code} for update`;
         if (r.length && r[0].used < MAX_REFERRALS) referredBy = r[0].id;
       }
+      // Couple: the partner signs up with their own data + consent, linked through the first person's partner_code.
+      type Partner = { id: string; party_id: string | null };
+      let partner: Partner | null = null;
+      if (par) {
+        const r = await tx<Partner[]>`select id, party_id from guests where partner_code = ${par} for update`;
+        if (r.length) {
+          const n = r[0].party_id ? (await tx`select count(*)::int as n from guests where party_id = ${r[0].party_id}`)[0].n : 1;
+          if (n < 2) partner = r[0];
+        }
+      }
       const ins = await tx`
         insert into guests (email, name, whatsapp, age_range, life_stage, allergies, allergy_notes, never_eats, wine, friday_ok,
-          base_hosted, base_been_hosted, base_friends, would_host, cooks_for_groups, home_dish, referred_by, consent_at, consent_version)
+          base_hosted, base_been_hosted, base_friends, would_host, cooks_for_groups, home_dish, life_answer, referred_by, consent_at, consent_version)
         values (${email}, ${name}, ${whatsapp}, ${pick("age_range")}, ${pick("life_stage")}, ${allergies}, ${str(input.allergy_notes) || null},
           ${str(input.never_eats) || null}, ${pick("wine")}, ${pick("friday_ok")}, ${pick("base_hosted")}, ${pick("base_been_hosted")},
-          ${pick("base_friends")}, ${pick("would_host")}, ${pick("cooks_for_groups")}, ${str(input.home_dish) || null}, ${referredBy},
-          now(), ${CONSENT_VERSION})
+          ${pick("base_friends")}, ${pick("would_host")}, ${pick("cooks_for_groups")}, ${str(input.home_dish) || null},
+          ${str(input.life_answer, 280) || null}, ${referredBy}, now(), ${CONSENT_VERSION})
         on conflict (email) do nothing
-        returning referral_code`;
-      return ins[0];
+        returning id, referral_code, partner_code`;
+      if (!ins[0]) return null;
+      if (partner) {
+        const party = partner.party_id ?? (await tx`insert into parties default values returning id`)[0].id;
+        await tx`update guests set party_id = ${party} where id in (${partner.id}, ${ins[0].id})`;
+      }
+      return { referral_code: ins[0].referral_code as string, partner_code: partner ? null : (ins[0].partner_code as string) };
     });
     if (!row) return { ok: false, error: "Esse e-mail já está na lista." };
-    return { ok: true, code: row.referral_code, name: name.split(" ")[0] };
+    return { ok: true, code: row.referral_code, name: name.split(" ")[0], partnerCode: row.partner_code };
   } catch (e) {
     console.error("signup failed", e);
     return { ok: false, error: "Não conseguimos salvar agora. Tenta de novo em instantes?" };
