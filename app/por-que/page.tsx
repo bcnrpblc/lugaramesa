@@ -4,7 +4,6 @@ import { Nav, Footer } from "@/components/SiteChrome";
 
 export const metadata: Metadata = { title: "Por quê" };
 
-// DRAFT copy — Flavio to rewrite (open item in the plan).
 export default function Page() {
   return (
     <div className="site">
@@ -14,7 +13,7 @@ export default function Page() {
           <h1 className="caps">Por que<br />uma mesa?</h1>
           <div className="hero-side">
             <span className="eyebrow">A ideia</span>
-            <p>A gente se acostumou a achar que receber alguém exige casa grande, louça bonita e tempo sobrando. E aí ninguém recebe ninguém.</p>
+            <p>A gente se acostumou a achar que receber alguém exige casa grande, louça bonita e tempo sobrando. E aí ninguém recebe ninguém. Cada um janta sozinho, com o celular, perto de gente que mora a dez minutos.</p>
           </div>
         </div></section>
 
@@ -30,23 +29,33 @@ export default function Page() {
           <div className="bento">
             <article className="box big" style={{ background: "var(--lime)" }}>
               <span className="eyebrow tag">Simples e frequente</span>
-              <h3>Toda sexta, a mesa abre</h3>
-              <p>Melhor uma mesa simples toda semana do que um banquete uma vez por ano. Comida feita em casa, música boa, jogos para quem quiser.</p>
+              <h3>Toda sexta, uma mesa</h3>
+              <p>Melhor uma mesa simples toda semana do que um banquete uma vez por ano. Comida feita em casa, cardápio surpresa, música boa e jogos para quem quiser. O anfitrião cozinha e serve; a mesa é de vocês.</p>
             </article>
             <article className="box" style={{ background: "var(--pink)" }}>
               <span className="eyebrow tag">Gente nova</span>
-              <h3>6 a 8 pessoas que não se conhecem</h3>
-              <p>As mesas são montadas a partir da inscrição. Quem deu liga pode ser chamado de novo.</p>
+              <h3>6 a 8 pessoas, quase todas desconhecidas</h3>
+              <p>Cada mesa é montada à mão a partir da inscrição: idades, momentos de vida e histórias diferentes. Não é encontro de solteiros nem networking. É jantar.</p>
             </article>
             <article className="box dark">
               <span className="eyebrow tag">Dinheiro</span>
               <h3>Ninguém fica de fora</h3>
-              <p>Cada jantar tem uma contribuição sugerida para os ingredientes, anônima. Quem pode, contribui mais e reserva um lugar para alguém.</p>
+              <p>Cada jantar tem uma contribuição sugerida para os ingredientes, anônima, que vem no convite. Pague o sugerido, o que puder, ou reserve um lugar para alguém.</p>
             </article>
             <article className="box" style={{ background: "var(--cyan)" }}>
+              <span className="eyebrow tag">Pra quem</span>
+              <h3>Qualquer pessoa</h3>
+              <p>De qualquer crença ou de nenhuma. Recém-chegado na cidade, morando sozinho, com a família longe, ou só com saudade de mesa cheia.</p>
+            </article>
+            <article className="box" style={{ background: "var(--white)", border: "2px solid #000" }}>
+              <span className="eyebrow tag">Como funciona</span>
+              <h3>Inscrição, convite, mesa</h3>
+              <p>1. Você se inscreve (2 minutos). 2. Quando abrir uma mesa que combina com você, o convite chega no WhatsApp 2 a 3 semanas antes. 3. Você confirma e recebe o endereço. 4. Depois, conta como foi, de forma anônima.</p>
+            </article>
+            <article className="box" style={{ background: "var(--lime)" }}>
               <span className="eyebrow tag">E depois</span>
               <h3>A mesa se espalha</h3>
-              <p>Se der certo aqui, dá certo na sua casa também.</p>
+              <p>A ideia não é ter um lugar famoso. É que, depois de sentar aqui, você abra a sua porta também. Se cabe em 40 m², cabe na sua casa.</p>
             </article>
           </div>
         </div></section>
