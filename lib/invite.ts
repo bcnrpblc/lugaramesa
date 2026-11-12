@@ -28,9 +28,9 @@ export async function getInvite(token: string): Promise<Invite | null> {
            t.title, t.meal_type, t.starts_at, t.duration_min, t.address, t.address_notes,
            t.suggested_amount::text as suggested_amount, t.pix_key, t.wine_note, t.public_id, t.seats,
            coalesce((select bool_and(g2.wine = 'sim') from invitations i2 join guests g2 on g2.id = i2.guest_id
-                     where i2.table_id = t.id and i2.rsvp <> 'nao'), false) as wine_ok,
-           (select count(*)::int from invitations i3 where i3.table_id = t.id and i3.rsvp = 'sim') as confirmed
+                     where i2.table_id = t.id and i2.rsvp <> 'nao' and i2.removed_at is null), false) as wine_ok,
+           (select count(*)::int from invitations i3 where i3.table_id = t.id and i3.rsvp = 'sim' and i3.removed_at is null) as confirmed
     from invitations i join guests g on g.id = i.guest_id join dinner_tables t on t.id = i.table_id
-    where i.token = ${token}`;
+    where i.token = ${token} and i.removed_at is null`;
   return r[0] || null;
 }
