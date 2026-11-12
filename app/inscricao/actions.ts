@@ -3,7 +3,7 @@
 import { db } from "@/lib/db";
 import { FOOD_VALUES } from "@/lib/foods";
 
-const CONSENT_VERSION = "2026-11-v1";
+const CONSENT_VERSION = "2026-11-v2"; // must match /privacidade
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const MAX_REFERRALS = 2;
 
