@@ -26,6 +26,7 @@ async function nextTable(): Promise<{ when: string; open: number } | null> {
     return null;
   }
 }
+import { HostTeaser } from "@/components/Host";
 
 function Seats() {
   return (
@@ -149,6 +150,8 @@ export default async function Home() {
             <Photo src="/fotos/galeria-5.jpg" alt="Velas e pratos vazios no fim da noite" caption="Foto: fim de noite" />
           </Squeeze>
         </div></section>
+
+        <HostTeaser />
 
         <section className="faq-sec" id="combinados"><div className="wrap">
           <h2>Tem alguma dúvida?</h2>

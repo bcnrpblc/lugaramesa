@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Nav, Footer } from "@/components/SiteChrome";
 import { Photo } from "@/components/Photo";
 import { Rolodex } from "@/components/Rolodex";
+import { HostSection } from "@/components/Host";
 
 const description = "Conforto não é requisito para hospitalidade. Por que uma mesa pequena, toda sexta, com gente que ainda não se conhece.";
 export const metadata: Metadata = { title: "Por quê", description, openGraph: { title: "Por que uma mesa?", description, locale: "pt_BR", type: "article" } };
@@ -32,6 +33,8 @@ export default function Page() {
             <Link className="btn btn-hot" href="/inscricao">Reservar meu lugar</Link>
           </div>
         </section>
+
+        <HostSection />
 
         <section className="black"><div className="wrap">
           <h2 className="stack-head">Os combinados</h2>
