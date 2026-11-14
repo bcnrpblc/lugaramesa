@@ -1,6 +1,6 @@
 # Um Lugar à Mesa
 
-Next.js 15 + Tailwind 4 + Motion + Postgres (Supabase) + Vercel.
+Next.js 16 + Tailwind 4 + Motion + Postgres (Supabase) + Vercel.
 
 ## Pages
 | Path | What |
@@ -16,7 +16,9 @@ Next.js 15 + Tailwind 4 + Motion + Postgres (Supabase) + Vercel.
 ## Setup (once)
 1. Supabase: new project (region São Paulo). SQL Editor → paste `db/schema.sql` → Run.
 2. Supabase → Connect → **Transaction pooler** URI (port 6543). That is `DATABASE_URL`.
-3. Vercel: import the repo, add env vars `DATABASE_URL`, `NEXT_PUBLIC_SITE_URL` (final domain), `NEXT_PUBLIC_PRIVACY_EMAIL`, `ADMIN_PASSWORD`. Deploy.
+3. Cloudflare R2: create a private bucket + an API token (Object Read & Write).
+4. Vercel: import the repo, add every var in `.env.example` (`DATABASE_URL`, `NEXT_PUBLIC_SITE_URL` (final domain), `NEXT_PUBLIC_PRIVACY_EMAIL`, `ADMIN_PASSWORD`, `R2_*`). `NEXT_PUBLIC_*` are baked in at build time: redeploy after changing them. Deploy.
+   Functions run in São Paulo (`gru1`, set in `vercel.json`) next to the Supabase DB.
 
 Already ran an older `schema.sql`? Run the whole file again: it is idempotent and adds the v2 pieces.
 
