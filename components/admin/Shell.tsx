@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { logout } from "@/app/admin/actions";
 
-export function Shell({ children, title, erro, ok }: { children: React.ReactNode; title: string; erro?: string; ok?: boolean }) {
+export function Shell({ children, title, erro, ok, back }: { children: React.ReactNode; title: string; erro?: string; ok?: boolean; back?: string }) {
   return (
     <div className="min-h-dvh bg-cream text-ink">
       <header className="sticky top-0 z-10 bg-ink text-white">
@@ -14,6 +14,7 @@ export function Shell({ children, title, erro, ok }: { children: React.ReactNode
         </nav>
       </header>
       <main className="mx-auto max-w-6xl px-4 py-6">
+        {back && <Link href={back} className="mb-2 inline-block text-sm font-semibold text-muted hover:text-ink">← Voltar</Link>}
         <h1 className="display mb-5 text-3xl md:text-4xl">{title}</h1>
         {erro && <p role="alert" className="mb-4 rounded-card bg-pink px-4 py-3 font-semibold">{erro}</p>}
         {ok && <p className="mb-4 rounded-card bg-lime px-4 py-3 font-semibold">Salvo.</p>}

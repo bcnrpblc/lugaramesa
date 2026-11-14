@@ -10,9 +10,9 @@ export function Nav({ home = false }: { home?: boolean }) {
         <nav className="nav-links" aria-label="Seções">
           <a href={h("como")}>Como funciona</a>
           <Link href="/por-que">Por quê</Link>
-          <a href={h("combinados")}>Combinados</a>
+          <a href={h("combinados")}>Dúvidas</a>
         </nav>
-        <Link className="btn btn-hot" href="/inscricao">Quero um lugar</Link>
+        <Link className="btn btn-hot" href="/inscricao">Reservar meu lugar</Link>
       </div></header>
     </>
   );
@@ -21,7 +21,7 @@ export function Nav({ home = false }: { home?: boolean }) {
 export function Footer() {
   return (
     <footer>
-      <div className="wrap"><div className="news"><span>Vem que tem lugar.</span><Link className="btn" href="/inscricao" style={{ background: "var(--ink)", color: "var(--white)" }}>Quero um lugar</Link></div></div>
+      <div className="wrap"><div className="news"><span>Vem que tem lugar.</span><Link className="btn btn-ink" href="/inscricao">Reservar meu lugar</Link></div></div>
       <div className="base"><div className="wrap">
         <span>Um Lugar à Mesa · gente perto de gente, toda sexta.</span>
         <span><Link href="/por-que">Por quê</Link> · <Link href="/privacidade">Privacidade</Link> · Por convite.</span>

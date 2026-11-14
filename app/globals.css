@@ -2,10 +2,10 @@
 
 :root{
   color-scheme:light;
-  --white:#FFFFFF; --cream:#FFFCF6; --ink:#000000; --black:#000000; --dark:#2D2C37; --slate:#2D2C37; --muted:#5C5B66; --line:#E6E6EA;
-  --pink:#FF83DA; --hot:#FF83DA; --on-hot:#000000; --pop:#FF83DA; --cyan:#D2F4FF; --lime:#E8FF5B; --r:12px;
-  --display:soehne, "soehne Fallback", var(--font-inter-tight), system-ui, sans-serif;
-  --body:soehne, "soehne Fallback", var(--font-inter-tight), system-ui, sans-serif;
+  --white:#FFFFFF; --cream:#FFFCF6; --ink:#000000; --black:var(--ink); --dark:#2D2C37; --slate:var(--dark); --muted:#5C5B66; --muted-dark:#9A9AA3; --line:#E6E6EA; --line-dark:#222222;
+  --pink:#FF83DA; --hot:var(--pink); --on-hot:var(--ink); --pop:var(--pink); --cyan:#D2F4FF; --lime:#E8FF5B; --r:12px;
+  --display:var(--font-inter-tight), system-ui, sans-serif;
+  --body:var(--font-inter-tight), system-ui, sans-serif;
   --pill:999px; --max:1200px;
 }
 
@@ -44,5 +44,8 @@ body{background:var(--white);color:var(--ink);font:400 17px/1.55 var(--body);-we
 .field::placeholder{color:#B9B8C2}
 .field:focus,.field:focus-visible{border-color:var(--hot);outline:none}
 .field:-webkit-autofill{-webkit-box-shadow:0 0 0 100px var(--cream) inset;box-shadow:0 0 0 100px var(--cream) inset;-webkit-text-fill-color:var(--ink);caret-color:var(--ink);transition:background-color 9999s}
-textarea.field{resize:none;min-height:3.2em;line-height:1.3}
-:focus-visible{outline:3px solid var(--hot);outline-offset:2px}
+textarea.field{resize:none;line-height:1.3;field-sizing:content;max-height:8em}
+:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+/* light ring on dark surfaces, back to ink on light cards inside them (pink ring was 2.2:1 on white) */
+:is(.black,footer,.manifesto,.box.dark,.t-black) :focus-visible{outline-color:var(--white)}
+:is(.black .box:not(.dark),footer .news) :focus-visible{outline-color:var(--ink)}

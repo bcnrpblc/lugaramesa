@@ -8,7 +8,7 @@ const inter = Inter_Tight({ subsets: ["latin"], weight: ["400", "500", "600", "7
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"),
   title: { default: "Um Lugar à Mesa", template: "%s · Um Lugar à Mesa" },
-  description: "Não é uma experiência gastronômica, é gente perto de gente. Jantares de sexta para 6 a 8 pessoas.",
+  description: "Não é uma experiência gastronômica, é gente perto de gente. Jantares às sextas para 6 a 8 pessoas.",
   openGraph: { title: "Um Lugar à Mesa", description: "Vem que tem lugar.", locale: "pt_BR", type: "website" },
   robots: { index: true, follow: true },
 };

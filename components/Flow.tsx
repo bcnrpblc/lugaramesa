@@ -195,7 +195,9 @@ export default function Flow({ steps, initial = {}, submitLabel, onSubmit, intro
 
       <nav className="fixed bottom-0 inset-x-0 bg-cream/95 backdrop-blur border-t border-line">
         <div className="max-w-[720px] mx-auto px-4 sm:px-8 py-3 flex items-center justify-between gap-3">
-          <button type="button" className="pill pill-line" onClick={back} disabled={idx === 0 || busy} aria-label="Voltar">← Voltar</button>
+          {idx === 0
+            ? <Link href="/" className="pill pill-line">← Voltar</Link>
+            : <button type="button" className="pill pill-line" onClick={back} disabled={busy}>← Voltar</button>}
           <div className="flex gap-2">
             {step.optional && !isLast && autoAdvance && (
               <button type="button" className="pill pill-line" onClick={() => { set(step.id, undefined); setDir(1); setIdx((i) => i + 1); }} disabled={busy}>Pular</button>
@@ -243,7 +245,7 @@ function StepBody({ step, values, set, pick }: { step: Step; values: Values; set
         <textarea
           ref={inputRef}
           className="field"
-          rows={2}
+          rows={1}
           placeholder={step.placeholder}
           maxLength={step.maxLength || 500}
           value={(v as string) || ""}

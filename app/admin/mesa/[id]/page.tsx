@@ -42,7 +42,7 @@ export default async function Page({ params, searchParams }: {
   const feedbackUrl = `${siteUrl()}/feedback/${t.public_id}`;
 
   return (
-    <Shell title={t.title} erro={sp.erro} ok={sp.ok === "1"}>
+    <Shell title={t.title} back="/admin" erro={sp.erro} ok={sp.ok === "1"}>
       <p className="-mt-3 mb-5 font-semibold text-muted">
         {shortDate(t.starts_at)} · {active.filter((s) => s.status === "sim").length} confirmados · {active.length}/{t.seats} na mesa
         {t.is_pilot && " · piloto"}

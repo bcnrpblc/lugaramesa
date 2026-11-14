@@ -22,7 +22,7 @@ export default async function Page({ params }: { params: Promise<{ token: string
       </div></header>
       <main>
         <section className="hero"><div className="wrap">
-          <h1 className="caps">Oi, {g.first}.</h1>
+          <h1 className="caps">Oi, {g.first}!</h1>
           <div className="hero-side">
             <span className="eyebrow">Só você tem este link</span>
             <p>Guarde esta página. Por aqui você diz quando está livre e, se quiser, manda uma foto.</p>

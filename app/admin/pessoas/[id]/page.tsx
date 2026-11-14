@@ -35,7 +35,7 @@ export default async function Page({ params, searchParams }: { params: Promise<{
   const allergies = (g.allergies as string[]).filter((a) => a !== "nenhuma");
 
   return (
-    <Shell title={g.name} erro={sp.erro} ok={sp.ok === "1"}>
+    <Shell title={g.name} back="/admin/pessoas" erro={sp.erro} ok={sp.ok === "1"}>
       <div className="grid gap-5 lg:grid-cols-2">
         <Card>
           <div className="mb-4 flex items-center gap-4">
