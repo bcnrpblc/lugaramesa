@@ -5,8 +5,9 @@ export const TOKEN_RE = /^[a-z0-9]{16,40}$/;
 
 export async function guestByToken(token: string) {
   if (!TOKEN_RE.test(token)) return null;
-  const r = await db()<{ id: string; first: string; has_photo: boolean }[]>`
-    select g.id, split_part(g.name, ' ', 1) as first, exists(select 1 from guest_photos p where p.guest_id = g.id) as has_photo
+  const r = await db()<{ id: string; first: string; has_photo: boolean; referral_code: string; link_used: number }[]>`
+    select g.id, split_part(g.name, ' ', 1) as first, g.referral_code,
+      (select count(*)::int from guests x where x.referred_by = g.id and coalesce(x.invited_via, 'link') = 'link') as link_used, exists(select 1 from guest_photos p where p.guest_id = g.id) as has_photo
     from guests g where g.guest_token = ${token}`;
   return r[0] || null;
 }
