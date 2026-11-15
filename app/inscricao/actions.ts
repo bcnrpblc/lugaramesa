@@ -3,6 +3,7 @@
 import { db } from "@/lib/db";
 import { FOOD_VALUES } from "@/lib/foods";
 import { lookupCode } from "@/lib/network";
+import { rememberMember } from "@/lib/member";
 
 const CONSENT_VERSION = "2026-11-v2"; // must match /privacidade
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
@@ -113,6 +114,7 @@ export async function submitSignup(input: Record<string, unknown>): Promise<Sign
     });
     if (!row) return { ok: false, error: "Esse e-mail já está na lista." };
     if ("closed" in row) return { ok: false, error: row.closed === "full" ? "Esse convite acabou de esgotar. Peça o link para outra pessoa que já está na mesa." : "Esse convite não vale mais. Peça o link para quem te chamou." };
+    await rememberMember(row.guest_token, row.referral_code);
     return { ok: true, code: row.referral_code, name: name.split(" ")[0], partnerCode: row.partner_code, guestToken: row.guest_token, nominated: row.nominated };
   } catch (e) {
     console.error("signup failed", e);

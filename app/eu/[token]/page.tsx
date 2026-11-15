@@ -7,6 +7,7 @@ import { Fridays, PhotoBox } from "./Eu";
 import { CopyButton } from "@/components/CopyButton";
 import { siteUrl } from "@/lib/format";
 import { LINK_CAP } from "@/lib/network";
+import { forgetMember } from "@/app/entrar/actions";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Seu espaço", robots: { index: false, follow: false } };
@@ -31,7 +32,7 @@ export default async function Page({ params }: { params: Promise<{ token: string
           <h1 className="caps">Oi, {g.first}!</h1>
           <div className="hero-side">
             <span className="eyebrow">Só você tem este link</span>
-            <p>Por aqui você diz quando está livre, manda uma foto se quiser e pega seu link de convite. Perdeu este link? Entre de novo em <Link className="link" href="/entrar">/entrar</Link> com seu e-mail.</p>
+            <p>Por aqui você diz quando está livre, manda uma foto se quiser e pega seu link de convite. Este celular fica lembrado: pelo rodapé do site, em "Entrar", você volta direto aqui. Em outro aparelho, entre com seu e-mail em <Link className="link" href="/entrar">/entrar</Link>.</p>
           </div>
         </div></section>
         <section className="wrap pb-12">
@@ -65,7 +66,7 @@ export default async function Page({ params }: { params: Promise<{ token: string
           </div>
         </section>
       </main>
-      <footer><div className="base"><div className="wrap"><span>Um Lugar à Mesa · gente perto de gente.</span><span><Link href="/privacidade">Privacidade</Link></span></div></div></footer>
+      <footer><div className="base"><div className="wrap"><span>Um Lugar à Mesa · gente perto de gente.</span><span><form action={forgetMember} style={{ display: "inline" }}><button style={{ textDecoration: "underline", cursor: "pointer" }}>Sair deste celular</button></form> · <Link href="/privacidade">Privacidade</Link></span></div></div></footer>
     </div>
   );
 }

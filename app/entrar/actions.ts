@@ -3,7 +3,9 @@
 import { cookies } from "next/headers";
 import { db } from "@/lib/db";
 import { siteUrl } from "@/lib/format";
-import { INVITE_COOKIE } from "@/lib/network";
+import { redirect } from "next/navigation";
+import { INVITE_COOKIE, MEMBER_COOKIE } from "@/lib/network";
+import { rememberMember } from "@/lib/member";
 import { emailFromAccessToken, sendMagicLink } from "@/lib/supa-auth";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
@@ -31,6 +33,14 @@ export async function finishLogin(accessToken: string): Promise<{ to: string } |
   const [g] = await db()`select guest_token, referral_code from guests where email = ${email}`;
   if (!g) return { error: "Não achamos sua inscrição com esse e-mail." };
   // Members can see the site again (main URL is invite-only).
-  (await cookies()).set(INVITE_COOKIE, g.referral_code, { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", path: "/", maxAge: 60 * 60 * 24 * 30 });
+  await rememberMember(g.guest_token, g.referral_code);
   return { to: `/eu/${g.guest_token}` };
+}
+
+/** "Sair deste celular" on /eu. */
+export async function forgetMember() {
+  const jar = await cookies();
+  jar.delete(MEMBER_COOKIE);
+  jar.delete(INVITE_COOKIE);
+  redirect("/");
 }

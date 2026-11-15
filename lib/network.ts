@@ -4,6 +4,9 @@ import type postgres from "postgres";
 /** Each member's personal link lets in this many people. Then it expires. */
 export const LINK_CAP = 3;
 export const INVITE_COOKIE = "lugar_convite";
+/** Remembers a member on this phone (value = their guest_token, same secret as their /eu link). 1 year. */
+export const MEMBER_COOKIE = "lugar_membro";
+export const MEMBER_MAX_AGE = 60 * 60 * 24 * 365;
 
 export const cleanCode = (v?: unknown) => (typeof v === "string" ? v : "").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 12);
 
