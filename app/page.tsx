@@ -50,7 +50,7 @@ const FAQ: [string, string][] = [
   ["Preciso conhecer alguém?", "Não. A maioria chega sem conhecer ninguém. Esse é exatamente o ponto."],
   ["E se eu tiver alergia ou restrição?", "Você avisa na inscrição e o cardápio secreto é pensado com isso em mente. Zero surpresa ruim."],
   ["Posso levar vinho?", "Só se todo mundo da mesa topar. Se alguém não responder, a resposta é não. Ninguém precisa se explicar."],
-  ["Posso levar um amigo?", "Mande o seu link de convite. Seu amigo se inscreve e entra na lista como todo mundo. Se quiser, você paga o lugar dele."],
+  ["Posso levar um amigo?", "É só por convite: depois de se inscrever, você ganha um link que vale para 3 pessoas. Seu amigo se inscreve por ele e entra na lista como todo mundo. Se quiser, você paga o lugar dele."],
   ["Quanto custa?", "Não cobramos entrada. Cada mesa tem sua própria contribuição, que chega um dia depois do jantar. Ninguém fica de fora por causa disso."],
   ["Onde é?", "No apartamento do Flavio. O endereço vai junto com a confirmação do convite."],
 ];

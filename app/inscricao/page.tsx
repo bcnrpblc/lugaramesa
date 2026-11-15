@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import Signup from "./Signup";
 import { db } from "@/lib/db";
 import { fmtDate } from "@/lib/format";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+import { INVITE_COOKIE, lookupCode } from "@/lib/network";
 
 export const metadata: Metadata = { title: "Quero meu lugar à mesa" };
 export const dynamic = "force-dynamic";
@@ -26,5 +29,12 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ r
         and not exists (select 1 from nominations n where n.nominator_id = i.id)`;
     if (r[0]) nomination = { id: indica, label: `${r[0].first} te indicou · ${fmtDate(r[0].starts_at)}` };
   }
-  return <Signup refCode={clean(ref)} parCode={parName ? parCode : undefined} parName={parName} nomination={nomination} />;
+  if (parName || nomination) return <Signup refCode="" parCode={parName ? parCode : undefined} parName={parName} nomination={nomination} />;
+  // Invite-only: the code comes from the /c/{code} link (cookie). Old ?ref= links go through /c to check and set it.
+  if (clean(ref)) redirect(`/c/${clean(ref)}`);
+  const code = clean((await cookies()).get(INVITE_COOKIE)?.value);
+  const c = code ? await lookupCode(db(), code) : ({ status: "unknown" } as const);
+  if (c.status === "full") redirect("/esgotado");
+  if (c.status !== "ok") redirect("/so-convite");
+  return <Signup refCode={code} inviter={c.first ?? undefined} />;
 }

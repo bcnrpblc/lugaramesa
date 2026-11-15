@@ -7,6 +7,7 @@ import { linkPartner, saveGuest, unlinkPartner } from "../../actions";
 import { Avatar } from "@/components/admin/Avatar";
 import { CopyButton } from "@/components/CopyButton";
 import { siteUrl } from "@/lib/format";
+import { LINK_CAP } from "@/lib/network";
 
 const LABELS: Record<string, string> = {
   email: "E-mail", whatsapp: "WhatsApp", age_range: "Idade", life_stage: "Momento", friday_ok: "Sexta funciona",
@@ -32,6 +33,8 @@ export default async function Page({ params, searchParams }: { params: Promise<{
         coalesce((select array_agg(to_char(day, 'DD/MM') order by day) from availability where guest_id = ${id} and day >= current_date), '{}') as free`,
   ]);
   const euLink = `${siteUrl()}/eu/${g.guest_token}`;
+  const inviteLink = `${siteUrl()}/c/${g.referral_code}`;
+  const [{ used }] = await db()`select count(*)::int as used from guests where referred_by = ${id} and coalesce(invited_via, 'link') = 'link'`;
   const allergies = (g.allergies as string[]).filter((a) => a !== "nenhuma");
 
   return (
@@ -43,6 +46,7 @@ export default async function Page({ params, searchParams }: { params: Promise<{
             <div className="grid gap-1 text-sm">
               <p><b>Sextas livres:</b> {extra[0].free.length ? extra[0].free.join(", ") : "não marcou"}</p>
               <div className="flex flex-wrap items-center gap-2"><span className="text-muted">Página da pessoa:</span><CopyButton text={euLink} label="Copiar link" className={btnSmall} /></div>
+              <div className="flex flex-wrap items-center gap-2"><span className="text-muted">Link de convite ({used}/{LINK_CAP}):</span><CopyButton text={inviteLink} label="Copiar link" className={btnSmall} /></div>
             </div>
           </div>
           <h2 className="mb-3 font-bold">Inscrição</h2>

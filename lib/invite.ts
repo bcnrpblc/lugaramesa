@@ -24,6 +24,7 @@ export type Invite = {
   active: number;
   nominated: string | null;
   guest_token: string;
+  link_used: number;
 };
 
 export async function getInvite(token: string): Promise<Invite | null> {
@@ -32,6 +33,7 @@ export async function getInvite(token: string): Promise<Invite | null> {
     select i.id, i.token, i.rsvp, split_part(g.name, ' ', 1) as guest_name, g.referral_code,
            t.title, t.meal_type, t.starts_at, t.duration_min, t.address, t.address_notes,
            t.suggested_amount::text as suggested_amount, t.pix_key, t.wine_note, t.public_id, t.seats, t.allow_nominations, g.guest_token,
+           (select count(*)::int from guests x where x.referred_by = g.id and coalesce(x.invited_via, 'link') = 'link') as link_used,
            (select count(*)::int from invitations i4 where i4.table_id = t.id and i4.removed_at is null and i4.rsvp <> 'nao') as active,
            (select n.status from nominations n where n.nominator_id = i.id) as nominated,
            coalesce((select bool_and(g2.wine = 'sim') from invitations i2 join guests g2 on g2.id = i2.guest_id

@@ -24,7 +24,7 @@ export function Footer() {
       <div className="wrap"><div className="news"><span>Vem que tem lugar.</span><Link className="btn btn-ink" href="/inscricao">Reservar meu lugar</Link></div></div>
       <div className="base"><div className="wrap">
         <span>Um Lugar à Mesa · gente perto de gente, toda sexta.</span>
-        <span><Link href="/por-que">Por quê</Link> · <Link href="/privacidade">Privacidade</Link> · Por convite.</span>
+        <span><Link href="/entrar">Entrar</Link> · <Link href="/por-que">Por quê</Link> · <Link href="/privacidade">Privacidade</Link> · Por convite.</span>
       </div></div>
     </footer>
   );
