@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { LINK_CAP } from "@/lib/network";
 import { getInvite } from "@/lib/invite";
 import { fmtBRL, fmtDate, fmtTime, siteUrl } from "@/lib/format";
 import { CopyButton } from "@/components/CopyButton";
@@ -18,8 +19,8 @@ export default async function Page({ params }: { params: Promise<{ token: string
   const ended = Date.now() > start.getTime() + inv.duration_min * 60000;
   const amount = fmtBRL(inv.suggested_amount);
   const yes = inv.rsvp === "sim";
-  const refLink = `${siteUrl()}/inscricao?ref=${inv.referral_code}`;
-  const wa = `https://wa.me/?text=${encodeURIComponent(`Tem lugar pra você numa mesa: jantar de sexta, 6 a 8 pessoas, comida feita em casa. Usa meu convite: ${refLink}`)}`;
+  const refLink = `${siteUrl()}/c/${inv.referral_code}`;
+  const wa = `https://wa.me/?text=${encodeURIComponent(`Tem lugar pra você numa mesa: jantar de sexta, 6 a 8 pessoas, comida feita em casa. É só por convite, e esse é o meu: ${refLink}`)}`;
 
   return (
     <div className="site">
@@ -124,8 +125,12 @@ export default async function Page({ params }: { params: Promise<{ token: string
               <article className="box" style={{ background: "var(--white)", border: "2px solid #000" }}>
                 <span className="eyebrow tag">Chame alguém</span>
                 <h3>Conhece quem precisa de uma mesa?</h3>
-                <p>Seu link coloca a pessoa na lista para as próximas mesas.</p>
-                <div className="flex flex-wrap gap-2.5"><a className="btn btn-hot" href={wa} target="_blank" rel="noopener">Mandar no WhatsApp</a><CopyButton text={refLink} label="Copiar link" className="btn btn-line" /></div>
+                {inv.link_used >= LINK_CAP ? (
+                  <p>Seu link já levou {LINK_CAP} pessoas para a mesa e expirou. Obrigado por espalhar.</p>
+                ) : (<>
+                  <p>É só por convite. Seu link coloca a pessoa na lista para as próximas mesas. Ainda vale para {LINK_CAP - inv.link_used} {LINK_CAP - inv.link_used === 1 ? "pessoa" : "pessoas"}.</p>
+                  <div className="flex flex-wrap gap-2.5"><a className="btn btn-hot" href={wa} target="_blank" rel="noopener">Mandar no WhatsApp</a><CopyButton text={refLink} label="Copiar link" className="btn btn-line" /></div>
+                </>)}
               </article>
             )}
           </div>

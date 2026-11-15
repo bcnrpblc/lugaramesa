@@ -2,10 +2,10 @@
 
 import { db } from "@/lib/db";
 import { FOOD_VALUES } from "@/lib/foods";
+import { lookupCode } from "@/lib/network";
 
 const CONSENT_VERSION = "2026-11-v2"; // must match /privacidade
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-const MAX_REFERRALS = 2;
 
 const ONE = {
   age_range: ["18-24", "25-34", "35-44", "45-54", "55+"],
@@ -29,14 +29,6 @@ export async function emailStatus(email: string): Promise<"ok" | "invalid" | "ex
   if (!EMAIL_RE.test(e)) return "invalid";
   const r = await db()`select 1 from guests where email = ${e}`;
   return r.length ? "exists" : "ok";
-}
-
-export async function codeStatus(code: string): Promise<"ok" | "empty" | "unknown" | "full"> {
-  const c = str(code, 20).toUpperCase().replace(/[^A-Z0-9]/g, "");
-  if (!c) return "empty";
-  const r = await db()`select (select count(*) from guests x where x.referred_by = g.id)::int as used from guests g where g.referral_code = ${c}`;
-  if (!r.length) return "unknown";
-  return r[0].used >= MAX_REFERRALS ? "full" : "ok";
 }
 
 export type SignupResult = { ok: true; code: string; name: string; partnerCode: string | null; guestToken: string; nominated: boolean } | { ok: false; error: string };
@@ -66,11 +58,10 @@ export async function submitSignup(input: Record<string, unknown>): Promise<Sign
   const sql = db();
   try {
     const row = await sql.begin(async (tx) => {
+      // Invite-only: every signup must come through a member's link, the host's root link, a partner link or a nomination.
       let referredBy: string | null = null;
-      if (code) {
-        const r = await tx`select g.id, (select count(*) from guests x where x.referred_by = g.id)::int as used from guests g where g.referral_code = ${code} for update`;
-        if (r.length && r[0].used < MAX_REFERRALS) referredBy = r[0].id;
-      }
+      let rootLinkId: string | null = null;
+      let via: "link" | "raiz" | "par" | "indica" | null = null;
       // Couple: the partner signs up with their own data + consent, linked through the first person's partner_code.
       type Partner = { id: string; party_id: string | null };
       let partner: Partner | null = null;
@@ -81,13 +72,26 @@ export async function submitSignup(input: Record<string, unknown>): Promise<Sign
           if (n < 2) partner = r[0];
         }
       }
+      let nominator: string | null = null;
+      if (indica) {
+        const r = await tx`select i.guest_id from invitations i join dinner_tables t on t.id = i.table_id
+          where i.id = ${indica} and i.rsvp = 'sim' and i.removed_at is null and t.allow_nominations and t.starts_at > now()`;
+        nominator = r[0]?.guest_id ?? null;
+      }
+      if (partner) { referredBy = partner.id; via = "par"; }
+      else if (nominator) { referredBy = nominator; via = "indica"; }
+      else {
+        const c = await lookupCode(tx, code, true);
+        if (c.status !== "ok") return { closed: c.status } as const;
+        if (c.kind === "member") { referredBy = c.id; via = "link"; } else { rootLinkId = c.id; via = "raiz"; }
+      }
       const ins = await tx`
         insert into guests (email, name, whatsapp, age_range, life_stage, allergies, allergy_notes, never_eats, wine, friday_ok,
-          base_hosted, base_been_hosted, base_friends, would_host, cooks_for_groups, home_dish, life_answer, foods, referred_by, consent_at, consent_version)
+          base_hosted, base_been_hosted, base_friends, would_host, cooks_for_groups, home_dish, life_answer, foods, referred_by, root_link_id, invited_via, consent_at, consent_version)
         values (${email}, ${name}, ${whatsapp}, ${pick("age_range")}, ${pick("life_stage")}, ${allergies}, ${str(input.allergy_notes) || null},
           ${str(input.never_eats) || null}, ${pick("wine")}, ${pick("friday_ok")}, ${pick("base_hosted")}, ${pick("base_been_hosted")},
           ${pick("base_friends")}, ${pick("would_host")}, ${pick("cooks_for_groups")}, ${str(input.home_dish) || null},
-          ${str(input.life_answer, 280) || null}, ${foods}, ${referredBy}, now(), ${CONSENT_VERSION})
+          ${str(input.life_answer, 280) || null}, ${foods}, ${referredBy}, ${rootLinkId}, ${via}, now(), ${CONSENT_VERSION})
         on conflict (email) do nothing
         returning id, referral_code, partner_code, guest_token`;
       if (!ins[0]) return null;
@@ -108,6 +112,7 @@ export async function submitSignup(input: Record<string, unknown>): Promise<Sign
       return { referral_code: ins[0].referral_code as string, partner_code: partner ? null : (ins[0].partner_code as string), guest_token: ins[0].guest_token as string, nominated };
     });
     if (!row) return { ok: false, error: "Esse e-mail já está na lista." };
+    if ("closed" in row) return { ok: false, error: row.closed === "full" ? "Esse convite acabou de esgotar. Peça o link para outra pessoa que já está na mesa." : "Esse convite não vale mais. Peça o link para quem te chamou." };
     return { ok: true, code: row.referral_code, name: name.split(" ")[0], partnerCode: row.partner_code, guestToken: row.guest_token, nominated: row.nominated };
   } catch (e) {
     console.error("signup failed", e);

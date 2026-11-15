@@ -359,4 +359,42 @@ from guests g left join guests r on r.id = g.referred_by
 order by g.created_at desc;
 
 
+-- =====================================================================
+-- v3 (2026-11-15): invite-only network. Main URL = "Só por convite".
+-- Entry only by link: /c/{code}. Code = a member's referral_code (3 signups max)
+-- or a root link the host makes in /admin/rede (max_uses set per link).
+-- Tree: guests.referred_by (member) or guests.root_link_id (host = root).
+-- =====================================================================
+create table if not exists root_links (
+  id          uuid primary key default gen_random_uuid(),
+  created_at  timestamptz not null default now(),
+  code        text not null unique default upper(substr(replace(gen_random_uuid()::text,'-',''),1,8)),
+  label       text not null,             -- e.g. "Amigos do Natal"
+  max_uses    int not null default 10 check (max_uses between 1 and 500),
+  revoked_at  timestamptz
+);
+alter table root_links enable row level security;
+alter table guests add column if not exists root_link_id uuid references root_links(id) on delete set null;
+-- How they got in: link (member's link, counts toward the 3), raiz (host link), par (couple), indica (nominated for a seat).
+alter table guests add column if not exists invited_via text check (invited_via in ('link','raiz','par','indica'));
+create index if not exists guests_root_link_idx on guests(root_link_id);
+
+-- Network tree. depth 1 = came straight from the host (root link or before the network existed).
+drop view if exists admin_network;
+create or replace view admin_network with (security_invoker = true) as
+with recursive t as (
+  select g.id, g.name, g.created_at, g.referred_by, g.root_link_id, g.invited_via, 1 as depth,
+         array[g.created_at::text || g.id::text] as path
+  from guests g where g.referred_by is null
+  union all
+  select g.id, g.name, g.created_at, g.referred_by, g.root_link_id, g.invited_via, t.depth + 1,
+         t.path || (g.created_at::text || g.id::text)
+  from guests g join t on g.referred_by = t.id
+)
+select t.id, t.name, t.created_at, t.referred_by, t.root_link_id, t.invited_via, t.depth, t.path,
+       (select count(*) from guests x where x.referred_by = t.id and coalesce(x.invited_via, 'link') = 'link')::int as link_used,
+       (select count(*) from guests x where x.referred_by = t.id)::int as children
+from t;
+
+
 revoke all on all tables in schema public from anon, authenticated;

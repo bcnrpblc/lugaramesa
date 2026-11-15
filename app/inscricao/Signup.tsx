@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Flow, { type Step, type Values } from "@/components/Flow";
 import { FOODS } from "@/lib/foods";
-import { codeStatus, emailStatus, submitSignup } from "./actions";
+import { emailStatus, submitSignup } from "./actions";
 
 const hasHealth = (v: Values) => ((v.allergies as string[]) || []).some((a) => a !== "nenhuma") || !!(v.allergy_notes as string)?.trim();
 
@@ -52,11 +52,6 @@ const STEPS: Step[] = [
     { value: "sim", label: "Gosto e sei" }, { value: "aprendendo", label: "Gosto, mas tô aprendendo" }, { value: "nao", label: "Prefiro só comer" } ] },
   { id: "home_dish", kind: "text", optional: true, title: "Um prato que te lembra casa", help: "Pode pular. Mas a gente adora saber.", placeholder: "Ex.: o feijão da minha avó", maxLength: 120 },
   { id: "life_answer", kind: "textarea", optional: true, title: "Qual foi a última vez que você fez algo pela primeira vez?", help: "Uma viagem, uma comida, uma coragem. Pode pular.", placeholder: "Ex.: mês passado aprendi a nadar", maxLength: 280 },
-  { id: "ref", kind: "text", optional: true, title: "Alguém te chamou?", help: "Se você recebeu um código de convite, coloca aqui. Se não, é só seguir.", placeholder: "Código (ex.: 7F3A9C)", maxLength: 12,
-    check: async (v) => {
-      const s = await codeStatus(String(v || ""));
-      return s === "unknown" ? "Não achamos esse código. Confere ou apaga para seguir." : s === "full" ? "Esse código já foi usado 2 vezes. Apaga para seguir sem ele." : null;
-    } },
   { id: "consent", kind: "consent", title: "Último passo", help: "Seus dados ficam só com o anfitrião e servem só para montar as mesas.",
     boxes: [
       { key: "consent_privacy", label: <>Li a <Link href="/privacidade" target="_blank" className="underline">política de privacidade</Link> e concordo com o uso dos meus dados para receber convites e montar as mesas.</> },
@@ -64,15 +59,14 @@ const STEPS: Step[] = [
     ] },
 ];
 
-export default function Signup({ refCode, parCode, parName, nomination }: { refCode: string; parCode?: string; parName?: string; nomination?: { id: string; label: string } }) {
+export default function Signup({ refCode, parCode, parName, nomination, inviter }: { refCode: string; parCode?: string; parName?: string; nomination?: { id: string; label: string }; inviter?: string }) {
   const router = useRouter();
-  const steps = parCode || nomination ? STEPS.filter((s) => s.id !== "ref") : STEPS;
   return (
     <Flow
-      steps={steps}
+      steps={STEPS}
       initial={{ ...(refCode ? { ref: refCode } : {}), ...(parCode ? { par: parCode } : {}), ...(nomination ? { indica: nomination.id } : {}) }}
       submitLabel="Quero meu lugar à mesa"
-      intro={<p className="eyebrow mb-5 text-muted">{nomination ? nomination.label : parName ? `Inscrição · vem com ${parName}` : "Inscrição · 2 minutos"}</p>}
+      intro={<p className="eyebrow mb-5 text-muted">{nomination ? nomination.label : parName ? `Inscrição · vem com ${parName}` : inviter ? `Convite de ${inviter} · 2 minutos` : "Inscrição · 2 minutos"}</p>}
       onSubmit={async (v) => {
         const r = await submitSignup(v as Record<string, unknown>);
         if (!r.ok) return r.error;

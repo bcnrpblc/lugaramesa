@@ -10,6 +10,7 @@ export function Shell({ children, title, erro, ok, back }: { children: React.Rea
           <Link href="/admin" className="opacity-80 hover:opacity-100">Calendário</Link>
           <Link href="/admin/quadro" className="opacity-80 hover:opacity-100">Quadro</Link>
           <Link href="/admin/pessoas" className="opacity-80 hover:opacity-100">Pessoas</Link>
+          <Link href="/admin/rede" className="opacity-80 hover:opacity-100">Rede</Link>
           <form action={logout} className="ml-auto"><button className="opacity-60 hover:opacity-100">Sair</button></form>
         </nav>
       </header>

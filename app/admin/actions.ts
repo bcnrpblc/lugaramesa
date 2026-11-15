@@ -276,3 +276,33 @@ export async function boardMove(input: { guestId: string; fromInvitation?: strin
   revalidatePath("/admin/quadro");
   return { ok: true };
 }
+
+// ---------- invite network ----------
+export async function createRootLink(f: FormData) {
+  await requireAdmin();
+  const label = s(f, "label", 80);
+  const max = Math.min(500, Math.max(1, parseInt(s(f, "max_uses", 4), 10) || 10));
+  if (!label) back("/admin/rede", "Dê um nome ao link (ex.: Amigos do Natal).");
+  let erro: string | undefined;
+  try {
+    await db()`insert into root_links (label, max_uses) values (${label}, ${max})`;
+  } catch (e) {
+    erro = dbError(e);
+  }
+  if (erro) back("/admin/rede", erro);
+  revalidatePath("/admin/rede");
+  redirect("/admin/rede?ok=1");
+}
+
+export async function setRootLink(f: FormData) {
+  await requireAdmin();
+  const rid = id(f, "id");
+  if (s(f, "op", 10) === "revogar") await db()`update root_links set revoked_at = now() where id = ${rid}`;
+  else if (s(f, "op", 10) === "reabrir") await db()`update root_links set revoked_at = null where id = ${rid}`;
+  else {
+    const max = Math.min(500, Math.max(1, parseInt(s(f, "max_uses", 4), 10) || 10));
+    await db()`update root_links set max_uses = ${max} where id = ${rid}`;
+  }
+  revalidatePath("/admin/rede");
+  redirect("/admin/rede?ok=1");
+}

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Nav, Footer } from "@/components/SiteChrome";
 import { CopyButton } from "@/components/CopyButton";
 import { siteUrl } from "@/lib/format";
+import { LINK_CAP } from "@/lib/network";
 
 export const metadata: Metadata = { title: "Você está na lista", robots: { index: false } };
 
@@ -14,8 +15,8 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ c
   const parWa = `https://wa.me/?text=${encodeURIComponent(`Me inscrevi no Um Lugar à Mesa. Faz a sua por este link pra gente ir junto: ${parLink}`)}`;
   const code = c.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 12);
   const name = n.replace(/[<>&"]/g, "").slice(0, 40);
-  const link = `${siteUrl()}/inscricao?ref=${code}`;
-  const wa = `https://wa.me/?text=${encodeURIComponent(`Tem lugar pra você numa mesa: jantar de sexta, 6 a 8 pessoas, comida feita em casa. Usa meu convite: ${link}`)}`;
+  const link = `${siteUrl()}/c/${code}`;
+  const wa = `https://wa.me/?text=${encodeURIComponent(`Tem lugar pra você numa mesa: jantar de sexta, 6 a 8 pessoas, comida feita em casa. É só por convite, e esse é o meu (vale pra ${LINK_CAP} pessoas): ${link}`)}`;
   return (
     <div className="site">
       <Nav />
@@ -35,8 +36,8 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ c
             <div className="bento">
               <article className="box big" style={{ background: "var(--lime)" }}>
                 <span className="eyebrow tag">Seu convite</span>
-                <h3>Chame até 2 pessoas</h3>
-                <p>Quem entra com o seu link vai para a lista como todo mundo. Seu código: <b style={{ letterSpacing: ".08em" }}>{code}</b></p>
+                <h3>Chame até {LINK_CAP} pessoas</h3>
+                <p>A mesa é só por convite. Seu link vale para {LINK_CAP} pessoas e depois expira. Quem entra por ele ganha o próprio link e vai para a lista como todo mundo. Entrar na lista não garante lugar: o anfitrião monta cada mesa. Seu código: <b style={{ letterSpacing: ".08em" }}>{code}</b></p>
                 <p style={{ fontSize: ".85rem", wordBreak: "break-all", background: "#fff", borderRadius: 8, padding: ".6em .8em" }}>{link}</p>
                 <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
                   <a className="btn btn-hot" href={wa} target="_blank" rel="noopener">Mandar no WhatsApp</a>
