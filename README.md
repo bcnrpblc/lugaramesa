@@ -8,6 +8,7 @@ Next.js 16 + Tailwind 4 + Motion + Postgres (Supabase) + Vercel.
 | `/` | Without an invite: **"Só por convite"** page (`/so-convite`). With one: LP (port of v8). Photos load from `public/fotos/*.jpg` |
 | `/c/{code}` | Personal invite link. Valid → remembers the code (cookie, 30 days) and opens the LP. Used up → `/esgotado` |
 | `/inscricao` | Signup, one question per screen. Only with a valid invite (or `?par=` / `?indica=`), else → `/so-convite` |
+| `/entrar` | Members' login, no password: email → Supabase Auth sends a magic link → `/entrar/ok` → their `/eu/{token}` page (also re-opens the site for them). Unknown emails get the same answer and no email |
 | `/obrigado` | Confirmation + guest's own invite link `/c/{code}` (3 signups, then it expires) |
 | `/convite/{token}` | Personal invite: date, RSVP, address (only after "sim"), contribution + Pix, wine (only if all invited said sim), calendar (.ics w/ day-before alarm), feedback link after the dinner |
 | `/feedback/{public_id}` | Anonymous feedback. Stores table id only |
@@ -18,7 +19,8 @@ Next.js 16 + Tailwind 4 + Motion + Postgres (Supabase) + Vercel.
 1. Supabase: new project (region São Paulo). SQL Editor → paste `db/schema.sql` → Run.
 2. Supabase → Connect → **Transaction pooler** URI (port 6543). That is `DATABASE_URL`.
 3. Cloudflare R2: create a private bucket + an API token (Object Read & Write).
-4. Vercel: import the repo, add every var in `.env.example` (`DATABASE_URL`, `NEXT_PUBLIC_SITE_URL` (final domain), `NEXT_PUBLIC_PRIVACY_EMAIL`, `ADMIN_PASSWORD`, `R2_*`). `NEXT_PUBLIC_*` are baked in at build time: redeploy after changing them. Deploy.
+4. Supabase → Authentication → URL Configuration: Site URL = your domain; Redirect URLs: add `https://<domain>/entrar/ok`. Built-in email sends only a few emails/hour: for more, set custom SMTP (Auth → SMTP).
+5. Vercel: import the repo, add every var in `.env.example` (`DATABASE_URL`, `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `NEXT_PUBLIC_SITE_URL` (final domain), `NEXT_PUBLIC_PRIVACY_EMAIL`, `ADMIN_PASSWORD`, `R2_*`). `NEXT_PUBLIC_*` are baked in at build time: redeploy after changing them. Deploy.
    Functions run in Portland (`pdx1`, set in `vercel.json`) next to the Supabase DB (us-west-2). Move both together.
 
 Already ran an older `schema.sql`? Run the whole file again: it is idempotent and adds the v2 pieces.

@@ -31,7 +31,7 @@ export default async function Page({ params }: { params: Promise<{ token: string
           <h1 className="caps">Oi, {g.first}!</h1>
           <div className="hero-side">
             <span className="eyebrow">Só você tem este link</span>
-            <p>Guarde esta página. Por aqui você diz quando está livre, manda uma foto se quiser e pega seu link de convite.</p>
+            <p>Por aqui você diz quando está livre, manda uma foto se quiser e pega seu link de convite. Perdeu este link? Entre de novo em <Link className="link" href="/entrar">/entrar</Link> com seu e-mail.</p>
           </div>
         </div></section>
         <section className="wrap pb-12">

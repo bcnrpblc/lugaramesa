@@ -22,7 +22,7 @@ export function Gate({ eyebrow, title, children, codeForm = false, erro }: { eye
             {erro && <p role="alert" className="text-pink text-sm font-semibold">{erro}</p>}
           </form>
         )}
-        <p className="text-sm text-white/50"><Link href="/por-que" className="underline">Por quê</Link> · <Link href="/privacidade" className="underline">Privacidade</Link></p>
+        <p className="text-sm text-white/50"><Link href="/entrar" className="underline">Já está na mesa? Entrar</Link> · <Link href="/por-que" className="underline">Por quê</Link> · <Link href="/privacidade" className="underline">Privacidade</Link></p>
       </div>
     </div>
   );
